@@ -1,0 +1,138 @@
+/*
+    IfExplorer, an open source file manager for the Android system.
+    Copyright (C) 2012  Kevin Lin
+    <chenbin.lin@tpv-tech.com>
+    
+    This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package com.sparseboolean.ifexplorer;
+
+import android.os.ServiceManager;
+import android.os.storage.IMountService;
+import android.os.IBinder;
+import android.os.RemoteException;
+import android.util.Log;
+
+public class DeviceItem {
+    @SuppressWarnings("unused")
+    private static final String TAG = "IfManager-DeviceItem";
+
+    public static final int UNMOUNT_EXECUTED = 0;
+    public static final int UNMOUNT_ERROR = -1;
+    public static final int UNMOUNTABLE = -2;
+
+    private String mPath = null;
+    private String mName = null;
+    private String mContainerDeviceName = null;
+    private int mType = -1;
+    private int mMountPort = -1;
+    private boolean mRemovable = false;
+    private boolean mIsMounted = false;
+
+    private IMountService mMountService = null;
+
+    public DeviceItem(String path, String name, boolean removable,
+            boolean mounted, int mountPort, int type) {
+        mPath = path;
+        mName = name;
+        mRemovable = removable;
+        mIsMounted = mounted;
+        mMountPort = mountPort;
+        mType = type;
+    }
+
+    public DeviceItem(String path, String name, String containerDeviceName,
+            boolean removable, boolean mounted, int mountPort, int type) {
+        mPath = path;
+        mName = name;
+        mContainerDeviceName = containerDeviceName;
+        mRemovable = removable;
+        mIsMounted = mounted;
+        mMountPort = mountPort;
+        mType = type;
+    }
+
+    // platform app feature
+    // Only compiled with Android Source
+    private synchronized IMountService getMountService() {
+        if (mMountService == null) {
+            IBinder service = ServiceManager.getService("mount");
+            if (service != null) {
+                mMountService = IMountService.Stub.asInterface(service);
+            } else {
+                Log.e(TAG, "Can't get mount service");
+            }
+        }
+        return mMountService;
+    }
+
+    public int eject() {
+        if (!isRemovable()) {
+            return UNMOUNTABLE;
+        }
+
+        IMountService mountService = getMountService();
+        try {
+            mountService.unmountVolume(mPath, true, false);
+        } catch (RemoteException e) {
+            return UNMOUNT_ERROR;
+        }
+
+        return UNMOUNT_EXECUTED;
+    }
+
+    public void setPath(String path) {
+        mPath = path;
+    }
+
+    public String getPath() {
+        return mPath;
+    }
+
+    public void setName(String name) {
+        mName = name;
+    }
+
+    public String getName() {
+        return mName;
+    }
+
+    public String getContainerDeviceName() {
+        return mContainerDeviceName;
+    }
+
+    public boolean isRemovable() {
+        return mRemovable;
+    }
+
+    public void setType(int type) {
+        mType = type;
+    }
+
+    public int getType() {
+        return mType;
+    }
+
+    public int getMountPort() {
+        return mMountPort;
+    }
+
+    public boolean isMounted() {
+        return mIsMounted;
+    }
+
+    public void setMountState(boolean mounted) {
+        mIsMounted = mounted;
+    }
+}

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+  <!-- left side pannel: collections(favorite and device shared the same dimen -->
+
+    <!-- collection common -->
+    <dimen name="collections_pannel_width">520dp</dimen>
+    <dimen name="side_pannel_shadow_width">7dp</dimen>
+    <dimen name="collections_margin_top">9dp</dimen>
+    <dimen name="collection_title_padding_top">9dp</dimen>
+    <dimen name="collection_title_padding_left">18dp</dimen>
+    <dimen name="collection_title_textsize">30dp</dimen>
+    <dimen name="collection_fold_prompt_textsize">30dp</dimen>
+    <dimen name="collection_list_margin_top">9dp</dimen>
+    <dimen name="collection_icon_width">64dp</dimen>
+    <dimen name="collection_icon_height">64dp</dimen>
+    <dimen name="collection_icon_padding_top">7dp</dimen>
+    <dimen name="collection_icon_padding_bottom">7dp</dimen>
+    <dimen name="collection_icon_margin_left">52dp</dimen>
+    <dimen name="collection_label_margin_left">12dp</dimen>
+    <dimen name="collection_label_textsize">30dp</dimen>
+    <dimen name="eject_button_width">36dp</dimen>
+    <dimen name="eject_button_height">36dp</dimen>
+    <dimen name="eject_button_margin_left">12dp</dimen>
+    <dimen name="eject_button_margin_right">18dp</dimen>
+
+  <!-- main pannel (task bar and file list) -->
+
+    <!-- task bar dimen -->
+    <dimen name="address_bar_height">78dp</dimen>
+    <dimen name="address_bar_shadow_height">5dp</dimen>
+    <dimen name="address_icon_width">54dp</dimen>
+    <dimen name="address_icon_height">54dp</dimen>
+    <dimen name="address_icon_padding_top">12dp</dimen>
+    <dimen name="address_icon_padding_bottom">12dp</dimen>
+    <dimen name="address_action_icon_padding_top">18dp</dimen>
+    <dimen name="address_action_icon_padding_bottom">6dp</dimen>
+    <dimen name="address_icon_margin_left">9dp</dimen>
+    <dimen name="path_label_textsize">30dp</dimen>
+    <dimen name="path_label_margin_left">8dp</dimen>
+    <dimen name="task_progress_bar_width">150dp</dimen>
+    <dimen name="task_progress_bar_height">48dp</dimen>
+
+    <dimen name="file_path_button_height">54dp</dimen>
+    <dimen name="file_path_button_textsize">26dp</dimen>
+    <dimen name="file_path_button_paddingHorizontal">15dp</dimen>
+    <dimen name="navigator_paddingLeft">15dp</dimen>
+    <dimen name="navigator_paddingVertical">4dp</dimen>
+
+    <!-- file list dimen -->
+    <dimen name="fixed_file_list_height">640dp</dimen>
+    <dimen name="file_list_padding_left">21dp</dimen>
+    <dimen name="file_list_padding_right">21dp</dimen>
+    <dimen name="file_icon_width">48dp</dimen>
+    <dimen name="action_panel_width">102dp</dimen>
+    <dimen name="file_icon_height">48dp</dimen>
+    <dimen name="file_icon_margin_top">9dp</dimen>
+    <dimen name="file_icon_margin_bottom">9dp</dimen>
+    <dimen name="file_icon_padding_top">9dp</dimen>
+    <dimen name="file_icon_padding_bottom">9dp</dimen>
+    <dimen name="file_icon_margin_left">24dp</dimen>
+    <dimen name="file_name_textsize">24dp</dimen>
+    <dimen name="file_name_margin_left">12dp</dimen>
+    <dimen name="file_info_textsize">24dp</dimen>
+    <dimen name="file_info_padding_right">24dp</dimen>
+    <!--  file grid dimen -->
+    <dimen name="file_grid_icon_height">64dp</dimen>
+    <dimen name="file_grid_icon_width">64dp</dimen>
+    <dimen name="file_grid_icon_marginBottom">2dp</dimen>
+    <dimen name="file_grid_name_textsize">22dp</dimen>
+    <dimen name="file_grid_name_padding">4dp</dimen>
+    <dimen name="file_grid_name_height">64dp</dimen>
+    <dimen name="file_grid_name_margin">8dp</dimen>
+    <dimen name="file_grid_icon_marginTop">6dp</dimen>
+    
+    <!-- interactive file list -->
+    <dimen name="file_stack_horizontal_gap">6dp</dimen>
+    <dimen name="file_stack_vertical_gap">4dp</dimen>
+
+    <!-- clip list dimen -->
+    <dimen name="clip_button_size">48dp</dimen>
+    <dimen name="clipboard_title_textsize">24dp</dimen>
+    <dimen name="clipgroup_title_padding">2dp</dimen>
+    <dimen name="clipgroup_title_textsize">16dp</dimen>
+    <dimen name="clipitem_name_textsize">14dp</dimen>
+    <dimen name="clipgroup_status_textsize">16dp</dimen>
+    <dimen name="clipgroup_oneshot_paddingLeft">30dp</dimen>
+    <dimen name="clipgroup_oneshot_paddingRight">30dp</dimen>
+    <dimen name="clipgroup_oneshot_paddingTop">15dp</dimen>
+    <dimen name="clip_progress_bar_marginTop">5dp</dimen>
+    <dimen name="clip_cancel_button_marginLeft">10dp</dimen>
+    <dimen name="clip_content_height">120dp</dimen>
+    <dimen name="clip_content_paddingLeft">20dp</dimen>
+    <dimen name="clip_content_padding">4dp</dimen>
+    <dimen name="clip_list_marginRight">10dp</dimen>
+    <dimen name="clip_list_horizontal_space">2dp</dimen>
+    <dimen name="clip_list_vertical_space">2dp</dimen>
+    <dimen name="clip_list_padding">6dp</dimen>
+    <dimen name="clip_repeat_task_paddingSide">20dp</dimen>
+    <dimen name="clipitem_icon_size">48dp</dimen>
+    <dimen name="clipitem_text_marginBottom">120dp</dimen>
+    <dimen name="clip_button_width">120dp</dimen>
+    <dimen name="clip_action_paddingTop">8dp</dimen>
+    <dimen name="clip_action_marginLeft">6dp</dimen>
+    <dimen name="clip_title_marginTop">4dp</dimen>
+
+    <dimen name="storage_percentage_textsize">21dp</dimen>
+
+</resources>

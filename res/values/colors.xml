@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+<color name="black_transparent">#00000000</color>
+<color name="black">#000000</color>
+<color name="blue">#0000ff</color>
+<color name="light_gray">#ff888888</color>
+<color name="silver_gray">#aeaeae</color>
+<color name="gray">#ee666666</color>
+<color name="white">#FFFFFF</color>
+<color name="background">#1E2537</color>
+<color name="side_pannel_background">#E7094470</color>
+<color name="address_bar_background">#07FFFFFF</color>
+
+<color name="collection_item_selected">#00B4F9</color>
+<color name="collection_item_pressed">#00E0FC</color>
+
+<color name="storage_space_sufficient">#ff66ff00</color>
+<color name="storage_space_free">#ff888888</color>
+<color name="storage_space_warning">#ffff6600</color>
+<color name="storage_space_run_out">#ffcc0000</color>
+<color name="action_bar_background">#17FFFFFF</color>
+<color name="file_tag_background">#07FFFFFF</color>
+
+<color name="clipboard_panel_background">#666666</color>
+<color name="clipboard_content_background">#D7FFFFFF</color>
+
+</resources>

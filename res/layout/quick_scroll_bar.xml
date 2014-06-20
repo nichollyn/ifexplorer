@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+
+    <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/scroll_top" android:layout_gravity="center_horizontal"
+            android:background="@drawable/scroll_top" android:padding="2dp" android:layout_margin="2dp"/>
+    <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/scroll_up" android:layout_gravity="center_horizontal"
+            android:background="@drawable/scroll_up" android:layout_margin="2dp"/>
+    <LinearLayout
+            android:id="@+id/dynamic_indexes"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+    </LinearLayout>
+    <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/scroll_down"
+               android:background="@drawable/scroll_down"
+               android:layout_margin="2dp" android:layout_gravity="center_horizontal" android:longClickable="false"/>
+    <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content" android:id="@+id/imageView4"
+               android:background="@drawable/scroll_bottom"
+               android:padding="2dp" android:layout_margin="2dp" android:layout_gravity="center_horizontal"/>
+</LinearLayout>

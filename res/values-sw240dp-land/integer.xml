@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="integer" name="file_grid_columns">6</item>
+    <item name="clip_grid_columns" type="integer">6</item>
+    <item name="file_label_max_display_length" type="integer">36</item>
+</resources>

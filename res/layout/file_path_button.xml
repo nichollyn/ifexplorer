@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent">
+
+    <ImageButton
+            android:id="@+id/path_button"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/file_path_button_height"
+            android:background="@drawable/file_path_button"
+            android:soundEffectsEnabled="true"
+            />
+    <TextView
+            android:id="@+id/path_label"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="@string/_copyItem"
+            android:textSize="@dimen/file_path_button_textsize"
+            android:textColor="@color/black"
+            android:gravity="center"
+            android:paddingLeft="@dimen/file_path_button_paddingHorizontal"
+            android:paddingRight="@dimen/file_path_button_paddingHorizontal"/>
+
+</FrameLayout>

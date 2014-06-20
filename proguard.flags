@@ -1,0 +1,8 @@
+-keepclassmembers class * extends android.content.Context {
+   public void *(android.view.View);
+   public void *(android.view.MenuItem);
+}
+
+-keepclassmembers class android.content.pm.PackageParser$Package {
+    public android.content.pm.ApplicationInfo applicationInfo;
+}

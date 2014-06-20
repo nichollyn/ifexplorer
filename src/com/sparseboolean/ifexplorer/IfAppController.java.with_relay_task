@@ -1,0 +1,2390 @@
+/*
+    IfManager, an open source system manager for the Android system.
+    Copyright (C) 2012  Kevin Lin
+    <chenbin.lin@tpv-tech.com>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package com.sparseboolean.ifexplorer;
+
+import gem.kevin.filemanager.FileManager;
+import gem.kevin.filemanager.ThumbnailCreator;
+import gem.kevin.task.FileOperationTask;
+import gem.kevin.task.FileOperationTask.FileOperationOptions;
+import gem.kevin.task.FileOperationTask.SearchOpTaskListener;
+import gem.kevin.util.DataUtil;
+import gem.kevin.util.StorageUtil;
+import gem.kevin.widget.FilePathNavigator;
+
+import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
+import android.text.format.Formatter;
+import android.text.format.Time;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.TranslateAnimation;
+import android.widget.AbsListView;
+import android.widget.ArrayAdapter;
+import android.widget.CheckBox;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+/**
+ * This class sits between the main activity and com.nexes.manager.FileManager
+ * class. To keep the FileManager class modular, this class exists to handle UI
+ * events and communicate that information to the FileManger class.
+ */
+public class IfAppController implements FileManager.FilePathObserver,
+        View.OnClickListener, FilePathNavigator.NavigationCallback,
+        SearchOpTaskListener {
+    public static interface AtomicTask {
+        public abstract void cancel();
+
+        public abstract void finish();
+
+        public abstract String getParentTaskIdentifier();
+
+        public abstract void pause();
+
+        public abstract void restart();
+
+        public abstract void resume();
+    }
+
+    public interface DeviceDataListener {
+        public void onStorageDeviceItemChanged();
+    }
+
+    public class FileDataGridAdapter extends ArrayAdapter<FileItem> {
+        public FileDataGridAdapter() {
+            super(mContext, R.layout.file_griditem, new ArrayList<FileItem>());
+        }
+
+        @SuppressWarnings("deprecation")
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            final FileItemViewHolder viewHolder;
+
+            if (convertView == null) {
+                convertView = LayoutInflater.from(mContext).inflate(
+                        R.layout.file_griditem, null);
+
+                viewHolder = new FileItemViewHolder();
+                viewHolder.nameTextView = (TextView) convertView
+                        .findViewById(R.id.file_name);
+                viewHolder.icon = (ImageView) convertView
+                        .findViewById(R.id.file_icon);
+
+                convertView.setTag(viewHolder);
+            } else {
+                viewHolder = (FileItemViewHolder) convertView.getTag();
+            }
+
+            FileItem fileItem = getItem(position);
+            // icon
+            Drawable iconDrawable = fileItem.getIconDrawable();
+            if (iconDrawable != null) {
+                viewHolder.icon.setImageDrawable(iconDrawable);
+            } else {
+                viewHolder.icon.setImageResource(fileItem.getIconResource());
+            }
+            // name
+            String name = fileItem.getName();
+            if (!name.contains(" ") && name.length() > 24) {
+                viewHolder.nameTextView.setText(name.substring(0, 21) + "...");
+            } else if (name.contains(" ") && name.length() > 22) {
+                viewHolder.nameTextView.setText(name.substring(0, 19) + "...");
+            } else {
+                viewHolder.nameTextView.setText(name);
+            }
+
+            return convertView;
+        }
+    }
+
+    public class FileDataListAdapter extends ArrayAdapter<FileItem> {
+        private String mSizeStr;
+        private static final String STR_NA = "N/A";
+
+        public FileDataListAdapter() {
+            super(mContext, R.layout.file_listitem, new ArrayList<FileItem>());
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            final FileItemViewHolder viewHolder;
+
+            if (convertView == null) {
+                convertView = LayoutInflater.from(mContext).inflate(
+                        R.layout.file_listitem, null);
+
+                viewHolder = new FileItemViewHolder();
+                viewHolder.nameTextView = (TextView) convertView
+                        .findViewById(R.id.file_name);
+                viewHolder.infoTextView = (TextView) convertView
+                        .findViewById(R.id.file_info);
+                viewHolder.icon = (ImageView) convertView
+                        .findViewById(R.id.file_icon);
+                viewHolder.selectModeMark = (CheckBox) convertView
+                        .findViewById(R.id.file_selected);
+
+                convertView.setTag(viewHolder);
+            } else {
+                viewHolder = (FileItemViewHolder) convertView.getTag();
+            }
+
+            Resources resources = getContext().getResources();
+            // initial visibility for views in convertView
+            viewHolder.infoTextView.setVisibility(View.VISIBLE);
+
+            AbsListView absListView = (AbsListView) parent;
+            viewHolder.selectModeMark.setChecked(absListView
+                    .isItemChecked(position));
+
+            FileItem fileItem = getItem(position);
+            // icon
+            Drawable iconDrawable = fileItem.getIconDrawable();
+            if (iconDrawable != null) {
+                viewHolder.icon.setImageDrawable(iconDrawable);
+            } else {
+                viewHolder.icon.setImageResource(fileItem.getIconResource());
+            }
+            // name
+            String name = fileItem.getName();
+            // String name = fileItem.getPath();
+            if (name.length() > 48) {
+                viewHolder.nameTextView.setText(name.substring(0, 48) + "...");
+            } else {
+                viewHolder.nameTextView.setText(name);
+            }
+            // info
+            String infoText = "";
+            String permissionStr = fileItem.getPermissionStr();
+            if (fileItem.isDirectory()) {
+                String strItems = resources.getString(R.string.items);
+                int num_items = (int) fileItem.getSize();
+                if (num_items >= 0) {
+                    infoText = (permissionStr != null) ? num_items + " "
+                            + strItems + " " + permissionStr : num_items + " "
+                            + strItems;
+                } else {
+                    infoText = (permissionStr != null) ? STR_NA + " "
+                            + permissionStr : STR_NA;
+                }
+            } else {
+                mSizeStr = Formatter.formatFileSize(mContext,
+                        fileItem.getSize());
+                infoText = (permissionStr != null) ? mSizeStr + " "
+                        + permissionStr : mSizeStr;
+            }
+            viewHolder.infoTextView.setText(infoText);
+
+            return convertView;
+        }
+    }
+
+    public static interface UiCallback {
+        public void onUrlContentUpdated(String newUrl, int contentSize,
+                boolean fromHistory);
+    }
+
+    /**
+     * A public inner class of controller which providing interface to manage
+     * background works
+     * 
+     * @author Kevin Lin(chenbin.lin@tpv-tech.com)
+     */
+    public class UserTask {
+        public static final String USER_TASK_IDENTIFIER_FORMAT = "%d_%s_on_%s";
+
+        public boolean resumable = false;
+        private String mIdentifier = "undefined";
+
+        private UserTaskController mActionHandler;
+        private HashSet<AtomicTask> mAtomicTasks = new HashSet<AtomicTask>();
+
+        public UserTask(UserTaskController handler, String identifier,
+                boolean resumable) {
+            UserTask.this.mActionHandler = handler;
+            UserTask.this.resumable = resumable;
+            UserTask.this.mIdentifier = identifier;
+        }
+
+        public void attachAtomicTask(AtomicTask task) {
+            mAtomicTasks.add(task);
+        }
+
+        public void cancel() {
+            mActionHandler.doCancel(UserTask.this);
+        }
+
+        public void finish() {
+            mActionHandler.doFinish(UserTask.this);
+        }
+
+        public HashSet<AtomicTask> getAllAtomicTasks() {
+            return mAtomicTasks;
+        }
+
+        public String getTaskIdentifier() {
+            return this.mIdentifier;
+        }
+
+        public boolean isResumable() {
+            return this.resumable;
+        }
+
+        public void pause() {
+            mActionHandler.doPause(UserTask.this);
+        }
+
+        public void removeAllAtomicTasks() {
+            mAtomicTasks.clear();
+        }
+
+        public void removeAtomicTask(AtomicTask task) {
+            mAtomicTasks.remove(task);
+        }
+
+        public void restart() {
+            mActionHandler.doRestart(UserTask.this);
+        }
+
+        public void resume() {
+            mActionHandler.doResume(UserTask.this);
+        }
+    }
+
+    public static interface UserTaskController {
+        public abstract void doCancel(UserTask userTask);
+
+        public abstract void doFinish(UserTask userTask);
+
+        public abstract void doPause(UserTask userTask);
+
+        public abstract void doRestart(UserTask userTask);
+
+        public abstract void doResume(UserTask userTask);
+    }
+
+    private class FileContentUpdateProcedure implements Runnable {
+        ArrayList<String> _filePaths;
+        boolean _fromHistory = false;
+
+        public FileContentUpdateProcedure(ArrayList<String> filePaths,
+                boolean fromHistory) {
+            _filePaths = (ArrayList<String>) filePaths.clone();
+            _fromHistory = fromHistory;
+        }
+
+        @Override
+        public void run() {
+            String currentUrl = mFileManager.getCurrentUrl();
+
+            for (String path : _filePaths) {
+                appendFileItem(path);
+            }
+
+            Message msg = mUiHandler.obtainMessage(MSG_CURRENT_DIR_UPDATED);
+            msg.obj = currentUrl;
+            msg.arg1 = _filePaths.size();
+            msg.arg2 = _fromHistory ? 1 : 0;
+
+            mUiHandler.sendMessage(msg);
+        }
+
+    }
+
+    private static class FileItemViewHolder {
+        TextView nameTextView;
+        TextView infoTextView;
+        ImageView icon;
+        CheckBox selectModeMark;
+    }
+
+    /**
+     * A private inner class of EventHandler.UserTask used to perform time
+     * extensive operations. So the user does not think the the application has
+     * hung, operations such as copy/past, search, unzip and zip will all be
+     * performed in the background. This class extends AsyncTask in order to
+     * give the user a progress dialog to show that the App is working properly.
+     * 
+     * (note): this class will eventually be changed from using AsyncTask to
+     * using Handlers and messages to perform background operations.
+     * 
+     * @author Joe Berria
+     * @author Kevin Lin(chenbin.lin@tpv-tech.com)
+     */
+    private class FileOperationAsynTask extends
+            AsyncTask<String, Void, ArrayList<String>> implements AtomicTask {
+        private String file_name;
+        private ProgressDialog pr_dialog;
+        private int type;
+        private int subType = -1;
+        private int copy_rtn;
+        private ArrayList<String> taskToRelay;
+        private String searchPath = null;
+        private String searchStr = null;
+        private String rootSearchPath = null;
+        private int searchDepth = -1;
+        private ArrayList<String> result = new ArrayList<String>();
+
+        private FileOperationAsynTask(int type) {
+            this.type = type;
+        }
+
+        private FileOperationAsynTask(int type, int subType, String searchStr,
+                String searchPath, String rootSearchPath, int searchDepth) {
+            this.type = type;
+            this.subType = subType;
+            this.searchStr = searchStr;
+            this.searchPath = searchPath;
+            this.rootSearchPath = rootSearchPath;
+            this.searchDepth = searchDepth;
+        }
+
+        // implement AtomicTask::cancel
+        @Override
+        public void cancel() {
+            this.cancel(true);
+        }
+
+        // implement AtomicTask::finish
+        @Override
+        public void finish() {
+            updateDirectory(mFileManager.refreshUrlContent());
+        }
+
+        // implement AtomicTask::getRootTask()
+        @Override
+        public String getParentTaskIdentifier() {
+            return String.format(UserTask.USER_TASK_IDENTIFIER_FORMAT, subType,
+                    searchStr, rootSearchPath);
+        }
+
+        public String getTaskId() {
+            return rootSearchPath;
+        }
+
+        // implement AtomicTask::pause
+        @Override
+        public void pause() {
+            return;
+        }
+
+        // implement AtomicTask::restart
+        @Override
+        public void restart() {
+            if (searchPath != null
+                    && this.getStatus() == AsyncTask.Status.PENDING) {
+                this.execute(searchPath, searchStr);
+            }
+        }
+
+        // implement AtomicTask::resume
+        @Override
+        public void resume() {
+            return;
+        }
+
+        private void onCancelWork() {
+            this.cancel(true);
+        }
+
+        /**
+         * background thread here
+         */
+        @Override
+        protected ArrayList<String> doInBackground(String... params) {
+            if (isCancelled()) {
+                return null;
+            }
+
+            switch (type) {
+            case SEARCH_TYPE:
+                file_name = params[0];
+                ArrayList<String> found = mFileManager.searchInDirectory(
+                        mFileManager.getCurrentUrl(), file_name);
+                return found;
+
+            case COPY_TYPE:
+                int len = params.length;
+
+                if (mMultiSelectedData != null && !mMultiSelectedData.isEmpty()) {
+                    for (int i = 1; i < len; i++) {
+                        copy_rtn = mFileManager.copyToDirectory(params[i],
+                                params[0]);
+
+                        if (delete_after_copy) {
+                            mFileManager.deleteTarget(params[i]);
+                        }
+                    }
+                } else {
+                    copy_rtn = mFileManager.copyToDirectory(params[0],
+                            params[1]);
+
+                    if (delete_after_copy) {
+                        mFileManager.deleteTarget(params[0]);
+                    }
+                }
+
+                delete_after_copy = false;
+                return null;
+
+            case UNZIP_TYPE:
+                mFileManager.extractZipFiles(params[0], params[1]);
+                return null;
+
+            case UNZIPTO_TYPE:
+                mFileManager.extractZipFilesFromDir(params[0], params[1],
+                        params[2]);
+                return null;
+
+            case ZIP_TYPE:
+                mFileManager.createZipFile(params[0]);
+                return null;
+
+            case DELETE_TYPE:
+                int size = params.length;
+
+                for (int i = 0; i < size; i++) {
+                    mFileManager.deleteTarget(params[i]);
+                }
+
+                return null;
+
+            case RELAY_SEARCH_TASK:
+                switch (subType) {
+                /*
+                 * case StorageUtil.TYPE_FILE: taskToRelay =
+                 * mFileManager.relaySearchFiles(params[0], params[1], null,
+                 * mCachedSearchFilePaths, result, mMountedDevicePaths);
+                 * Log.i(TAG, "SIZE OF task to relay:" + taskToRelay.size());
+                 * return mCachedSearchFilePaths;
+                 */
+                case StorageUtil.TYPE_AUDIO:
+                    taskToRelay = mFileManager.relaySearchFiles(params[0],
+                            params[1],
+                            DataUtil.getSupportedAudioFileExtensions(),
+                            mCachedAudioFilePaths, result, mMountedDevicePaths);
+                    return mCachedAudioFilePaths;
+                case StorageUtil.TYPE_VIDEO:
+                    taskToRelay = mFileManager.relaySearchFiles(params[0],
+                            params[1],
+                            DataUtil.getSupportedVideoFileExtensions(),
+                            mCachedVideoFilePaths, result, mMountedDevicePaths);
+                    return mCachedVideoFilePaths;
+                case StorageUtil.TYPE_IMAGE:
+                    taskToRelay = mFileManager.relaySearchFiles(params[0],
+                            params[1],
+                            DataUtil.getSupportedImageFileExtensions(),
+                            mCachedImageFilePaths, result, mMountedDevicePaths);
+                    return mCachedImageFilePaths;
+                case StorageUtil.TYPE_APKFILE:
+                    taskToRelay = mFileManager.relaySearchFiles(params[0],
+                            params[1],
+                            DataUtil.getSupportedAppInstallerFileExtensions(),
+                            mCachedApkFilePaths, result, mMountedDevicePaths);
+                    return mCachedApkFilePaths;
+                default:
+                    return null;
+                }
+
+            case SMART_SEARCH_TYPE:
+                String basicSearchDir = StorageUtil.getHomeDir();
+                String extraSearchDir = StorageUtil.getExtraMountRoot();
+                switch (subType) {
+                case StorageUtil.TYPE_AUDIO:
+                    if (!mAudioCached) {
+                        if (mFileManager.searchFilesOfType(basicSearchDir,
+                                StorageUtil.TYPE_AUDIO, mCachedAudioFilePaths,
+                                mMountedDevicePaths)) {
+                            mAudioCached = true;
+                        }
+
+                        if (!extraSearchDir.equals(basicSearchDir)) {
+                            mFileManager.searchFilesOfType(extraSearchDir,
+                                    StorageUtil.TYPE_AUDIO,
+                                    mCachedAudioFilePaths, mMountedDevicePaths);
+                        }
+                    }
+                    Log.i(TAG, "smart search. return audio");
+                    return mCachedAudioFilePaths;
+                case StorageUtil.TYPE_VIDEO:
+                    if (!mVideoCached) {
+                        if (mFileManager.searchFilesOfType(basicSearchDir,
+                                StorageUtil.TYPE_VIDEO, mCachedVideoFilePaths,
+                                mMountedDevicePaths)) {
+                            mVideoCached = true;
+                        }
+
+                        if (!extraSearchDir.equals(basicSearchDir)) {
+                            mFileManager.searchFilesOfType(extraSearchDir,
+                                    StorageUtil.TYPE_VIDEO,
+                                    mCachedVideoFilePaths, mMountedDevicePaths);
+                        }
+                    }
+                    Log.i(TAG, "smart search. return video");
+                    return mCachedVideoFilePaths;
+                case StorageUtil.TYPE_IMAGE:
+                    if (!mImageCached) {
+                        if (mFileManager.searchFilesOfType(basicSearchDir,
+                                StorageUtil.TYPE_IMAGE, mCachedImageFilePaths,
+                                mMountedDevicePaths)) {
+                            mImageCached = true;
+                        }
+
+                        if (!extraSearchDir.equals(basicSearchDir)) {
+                            mFileManager.searchFilesOfType(extraSearchDir,
+                                    StorageUtil.TYPE_IMAGE,
+                                    mCachedImageFilePaths, mMountedDevicePaths);
+                        }
+                    }
+                    Log.i(TAG, "smart search. return image");
+                    return mCachedImageFilePaths;
+                case StorageUtil.TYPE_APKFILE:
+                    if (!mApkFilesCached) {
+                        if (mFileManager.searchFilesOfType(basicSearchDir,
+                                StorageUtil.TYPE_APKFILE, mCachedApkFilePaths,
+                                mMountedDevicePaths)) {
+                            mApkFilesCached = true;
+                        }
+
+                        if (!extraSearchDir.equals(basicSearchDir)) {
+                            mFileManager.searchFilesOfType(extraSearchDir,
+                                    StorageUtil.TYPE_APKFILE,
+                                    mCachedApkFilePaths, mMountedDevicePaths);
+                        }
+                    }
+                    Log.i(TAG, "smart search. return apk");
+                    return mCachedApkFilePaths;
+                default:
+                    return null;
+                }
+
+            default:
+                return null;
+            }
+        }
+
+        /**
+         * This is called when the background thread is finished. Like
+         * onPreExecute, anything here will be done on the EDT thread.
+         */
+        @Override
+        protected void onPostExecute(final ArrayList<String> result) {
+            final CharSequence[] names;
+            int len = result != null ? result.size() : 0;
+
+            switch (type) {
+            case SEARCH_TYPE:
+                /*
+                 * if (len == 0) { Toast.makeText(mContext,
+                 * R.string.cannot_find_ + file_name,
+                 * Toast.LENGTH_SHORT).show(); } else { names = new
+                 * CharSequence[len];
+                 * 
+                 * for (int i = 0; i < len; i++) { String entry = result.get(i);
+                 * names[i] = entry.substring(entry.lastIndexOf("/") + 1,
+                 * entry.length()); }
+                 * 
+                 * AlertDialog.Builder builder = new AlertDialog.Builder(
+                 * mContext); String title = String.format("%s %d %s",
+                 * getStringFromResId(R.string.found_), len,
+                 * getStringFromResId(R.string._files));
+                 * builder.setTitle(title); builder.setItems(names, new
+                 * DialogInterface.OnClickListener() {
+                 * 
+                 * @Override public void onClick(DialogInterface dialog, int
+                 * position) { String path = result.get(position);
+                 * updateDirectory(mFileManager.refreshUrlContent(
+                 * path.substring(0, path.lastIndexOf("/")))); } });
+                 * 
+                 * AlertDialog dialog = builder.create(); dialog.show(); }
+                 * 
+                 * pr_dialog.dismiss();
+                 */
+                break;
+
+            case COPY_TYPE:
+                if (mMultiSelectedData != null && !mMultiSelectedData.isEmpty()) {
+                    multi_select_flag = false;
+                    mMultiSelectedData.clear();
+                }
+
+                if (copy_rtn == 0) {
+                    Toast.makeText(mContext, R.string.copy_paste_succeed,
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(mContext, R.string.copy_paste_failed,
+                            Toast.LENGTH_SHORT).show();
+                }
+
+                pr_dialog.dismiss();
+                if (mInfoLabel != null) {
+                    mInfoLabel.setText("");
+                }
+                break;
+
+            case UNZIP_TYPE:
+                updateDirectory(mFileManager.refreshUrlContent());
+                pr_dialog.dismiss();
+                break;
+
+            case UNZIPTO_TYPE:
+                updateDirectory(mFileManager.refreshUrlContent());
+                pr_dialog.dismiss();
+                break;
+
+            case ZIP_TYPE:
+                updateDirectory(mFileManager.refreshUrlContent());
+                pr_dialog.dismiss();
+                break;
+
+            case DELETE_TYPE:
+                if (mMultiSelectedData != null && !mMultiSelectedData.isEmpty()) {
+                    mMultiSelectedData.clear();
+                    multi_select_flag = false;
+                }
+
+                updateDirectory(mFileManager.refreshUrlContent());
+                pr_dialog.dismiss();
+                if (mInfoLabel != null) {
+                    mInfoLabel.setText("");
+                }
+                break;
+
+            case RELAY_SEARCH_TASK:
+                updateFileManagerPatternPaths();
+                // For performance consideration, refresh only if matched result
+                // found
+                if (result.size() > 0) {
+                    Log.i(TAG,
+                            "Found match on url:"
+                                    + mFileManager.getCurrentUrl());
+                    updateDirectory(mFileManager.refreshUrlContent());
+                }
+                if (taskToRelay != null && searchDepth > 0) {
+
+                    for (int i = 0; i < taskToRelay.size(); i++) {
+                        String relaySearchDir = taskToRelay.get(i);
+                        if (KLOG) {
+                            Log.i(TAG, "relay search " + relaySearchDir);
+                        }
+                        // Fix ANR
+                        /*
+                         * if (searchStr.equals(FileManager.PATTERN_ALL)) {
+                         * relaySearchFilesByType(subType, relaySearchDir,
+                         * FileOperationAsynTask.this.rootSearchPath, true,
+                         * FileOperationAsynTask.this.searchDepth - 1); } else {
+                         * relaySearchFilesByStrMatch(subType, searchStr,
+                         * relaySearchDir,
+                         * FileOperationAsynTask.this.rootSearchPath, true,
+                         * FileOperationAsynTask.this.searchDepth - 1); }
+                         */
+                        Message msg = mUiHandler
+                                .obtainMessage(MSG_RELAY_SEARCH);
+                        HashMap<String, String> searchStrParams = new HashMap<String, String>();
+                        searchStrParams
+                                .put(KEY_SEARCH_ROOT_DIR, rootSearchPath);
+                        searchStrParams.put(KEY_SEARCH_DIR, relaySearchDir);
+                        searchStrParams.put(KEY_SEARCH_STR, searchStr);
+                        msg.obj = searchStrParams;
+                        msg.arg1 = subType;
+                        msg.arg2 = searchDepth - 1;
+
+                        mUiHandler.sendMessageDelayed(msg, 50);
+                    }
+                }
+                mRelaySearchTasks.remove(this);
+                if (mRelaySearchTasks.isEmpty()) {
+                    if (KLOG) {
+                        Log.i(TAG, "== kevin@xmic == There are still "
+                                + mRelaySearchTasks.size() + " relay tasks");
+                    }
+                    hideRelaySearchProgressDialog();
+                }
+                break;
+
+            case SMART_SEARCH_TYPE:
+                Log.i(TAG, "Post smart search. return apk");
+                updateFileManagerPatternPaths();
+                updateDirectory(mFileManager.getNextUrlContent(
+                        mFileManager.getCurrentUrl(), false, false));
+                if (pr_dialog != null) {
+                    pr_dialog.dismiss();
+                }
+                Log.i(TAG, "Post smart search. after dismiss");
+                break;
+            }
+
+            mBackgroundWorks.remove(this);
+        }
+
+        /**
+         * This is done on the EDT thread. this is called before doInBackground
+         * is called
+         */
+        @Override
+        protected void onPreExecute() {
+            switch (type) {
+            case SEARCH_TYPE:
+                pr_dialog = ProgressDialog.show(mContext,
+                        getStringFromResId(R.string.progress_search_title),
+                        getStringFromResId(R.string.progress_search_message),
+                        true, true);
+                break;
+            case COPY_TYPE:
+                pr_dialog = ProgressDialog.show(mContext,
+                        getStringFromResId(R.string.progress_copy_title),
+                        getStringFromResId(R.string.progress_copy_message),
+                        true, false);
+                break;
+            case UNZIP_TYPE:
+                pr_dialog = ProgressDialog.show(mContext,
+                        getStringFromResId(R.string.progress_unzip_title),
+                        getStringFromResId(R.string.progress_unzip_message),
+                        true, false);
+                break;
+            case UNZIPTO_TYPE:
+                pr_dialog = ProgressDialog.show(mContext,
+                        getStringFromResId(R.string.progress_unzip_title),
+                        getStringFromResId(R.string.progress_unzip_message),
+                        true, false);
+                break;
+            case ZIP_TYPE:
+                pr_dialog = ProgressDialog.show(mContext,
+                        getStringFromResId(R.string.progress_zip_title),
+                        getStringFromResId(R.string.progress_zip_message),
+                        true, false);
+                break;
+            case DELETE_TYPE:
+                pr_dialog = ProgressDialog.show(mContext,
+                        getStringFromResId(R.string.progress_delete_title),
+                        getStringFromResId(R.string.progress_delete_message),
+                        true, false);
+                break;
+            case RELAY_SEARCH_TASK:
+                /*
+                 * if (!mMultipleSearch &&
+                 * !BackgroundWork.this.rootSearchPath.equals
+                 * (EventHandler.this.mCurrentRelayTask)) { Log.i(TAG,
+                 * "== kevin@xmic == cancel relay search job for type:" +
+                 * subType + "in onPreExecute"); onCancelWork(); }
+                 */
+                // startSearchingAnimation(mAddressActionIcon);
+                // showRelaySearchProgressDialog(subType, searchPath);
+                break;
+            case SMART_SEARCH_TYPE:
+                boolean skipProgressDialog = false;
+                switch (subType) {
+                case StorageUtil.TYPE_AUDIO:
+                    skipProgressDialog = mAudioCached;
+                    break;
+                case StorageUtil.TYPE_VIDEO:
+                    skipProgressDialog = mVideoCached;
+                    break;
+                case StorageUtil.TYPE_IMAGE:
+                    skipProgressDialog = mImageCached;
+                    break;
+                case StorageUtil.TYPE_APKFILE:
+                    skipProgressDialog = mApkFilesCached;
+                    break;
+                default: // search for unknown type
+                    return;
+                }
+                if (skipProgressDialog) {
+                    return; // no ui prompt is needed
+                }
+
+                String dlgTitleSuffix = getStringFromResId(R.string.progress_search_title);
+                String dlgTitle;
+                String dlgMessage = getStringFromResId(R.string.progress_search_message);
+                switch (subType) {
+                case StorageUtil.TYPE_AUDIO:
+                    dlgTitle = dlgTitleSuffix + " "
+                            + getStringFromResId(R.string.audio_file);
+                    break;
+                case StorageUtil.TYPE_VIDEO:
+                    dlgTitle = dlgTitleSuffix + " "
+                            + getStringFromResId(R.string.video_file);
+                    break;
+                case StorageUtil.TYPE_IMAGE:
+                    dlgTitle = dlgTitleSuffix + " "
+                            + getStringFromResId(R.string.image_file);
+                    break;
+                case StorageUtil.TYPE_APKFILE:
+                    dlgTitle = dlgTitleSuffix + " "
+                            + getStringFromResId(R.string.apk_file);
+                    break;
+                default:
+                    return;
+                }
+                pr_dialog = new ProgressDialog(mContext);
+                pr_dialog.setTitle(dlgTitle);
+                pr_dialog.setMessage(dlgMessage);
+                pr_dialog.setCancelable(false);
+                pr_dialog.setButton(DialogInterface.BUTTON_NEGATIVE,
+                        getStringFromResId(R.string.cancel),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog,
+                                    int which) {
+                                onCancelWork();
+                                dialog.dismiss();
+                            }
+                        });
+                pr_dialog.show();
+                break;
+
+            default:
+                return;
+            }
+        }
+    }
+
+    private class StorageDeviceItemGenerator extends
+            AsyncTask<String, Void, ArrayList<DeviceItem>> {
+        private int type;
+
+        private StorageDeviceItemGenerator(int type) {
+            this.type = type;
+        }
+
+        @Override
+        protected ArrayList<DeviceItem> doInBackground(String... params) {
+            if (isCancelled()) {
+                return null;
+            }
+
+            switch (type) {
+            case GEN_SINGLE_DISK_DEVICE_ITEM: {
+                final ArrayList<DeviceItem> result = new ArrayList<DeviceItem>();
+                IfStorageVolume volume = mStorageUtil
+                        .getIfStorageVolumeFromPath(params[0]);
+                DeviceItem deviceItem = generateDeviceItemFromStorageVolume(volume);
+                if (deviceItem != null) {
+                    result.add(deviceItem);
+                }
+                return result;
+            }
+            case GEN_ALL_DEVICE_ITEM: {
+                final ArrayList<DeviceItem> result = new ArrayList<DeviceItem>();
+                ArrayList<IfStorageVolume> volumes = mStorageUtil
+                        .getIfStorageVolumes();
+                if (volumes != null) {
+                    for (IfStorageVolume volume : volumes) {
+                        DeviceItem deviceItem = generateDeviceItemFromStorageVolume(volume);
+                        if (deviceItem != null) {
+                            result.add(deviceItem);
+                        }
+                    }
+                }
+                return result;
+            }
+            default:
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(final ArrayList<DeviceItem> result) {
+            switch (type) {
+            case GEN_SINGLE_DISK_DEVICE_ITEM: {
+                if (result == null) {
+                    return;
+                }
+
+                DeviceItem deviceItem = result.get(0);
+                DeviceDataAdapter adapter = getApproximateDeviceAdapter(deviceItem
+                        .getMountPort());
+                if (adapter != null) {
+                    adapter.add(deviceItem);
+                    adapter.notifyDataSetChanged();
+                    getDeviceDataListener().onStorageDeviceItemChanged();
+                }
+                break;
+            }
+            case GEN_ALL_DEVICE_ITEM: {
+                if (result == null) {
+                    return;
+                }
+
+                for (DeviceItem item : result) {
+                    DeviceDataAdapter adapter = getApproximateDeviceAdapter(item
+                            .getMountPort());
+                    if (adapter != null) {
+                        adapter.add(item);
+                        adapter.notifyDataSetChanged();
+                        getDeviceDataListener().onStorageDeviceItemChanged();
+                    }
+                }
+            }
+            default:
+                return;
+            }
+        }
+
+        @Override
+        protected void onPreExecute() {
+            // do nothing
+        }
+    }
+
+    private UiCallback mUiCallback = null;
+    private static final String TAG = "IfExplorer-IfAppController";
+    private static final boolean KLOG = true;
+    public static final int MSG_UPDATE_CURRENT_DIR = 0;
+    public static final int MSG_CURRENT_DIR_UPDATED = 1;
+    public static final int MSG_SEARCH_PATH_UPDATED = 2;
+    public static final int MSG_SEARCH_RESULT_UPDATED = 3;
+    public static final int MSG_SEARCH_FINISHED = 4;
+    public static final int MSG_SEARCH_CANCELLED = 5;
+    public static final int MSG_RELAY_SEARCH = 6;
+    private static final String KEY_SEARCH_STR = "search_str";
+    private static final String KEY_SEARCH_ROOT_DIR = "search_root_dir";
+    private static final String KEY_SEARCH_DIR = "search_dir";
+    private StorageUtil mStorageUtil;
+    /*
+     * Unique types to control which file operation gets performed in the
+     * background
+     */
+    private static final int SEARCH_TYPE = 0x00;
+    private static final int COPY_TYPE = 0x01;
+    private static final int UNZIP_TYPE = 0x02;
+    private static final int UNZIPTO_TYPE = 0x03;
+    private static final int ZIP_TYPE = 0x04;
+    private static final int DELETE_TYPE = 0x05;
+    private static final int SMART_SEARCH_TYPE = 0x07;
+    private static final int GEN_SINGLE_DISK_DEVICE_ITEM = 0x08;
+    private static final int GEN_ALL_DEVICE_ITEM = 0x09;
+
+    private static final int RELAY_SEARCH_TASK = 0x0e;
+
+    private static final ArrayList<AsyncTask<String, Void, ?>> mBackgroundWorks = new ArrayList<AsyncTask<String, Void, ?>>();
+    private static final ArrayList<FileOperationAsynTask> mRelaySearchTasks = new ArrayList<FileOperationAsynTask>();
+    private ArrayList<String> mCachedAudioFilePaths;
+    private ArrayList<String> mCachedVideoFilePaths;
+    private ArrayList<String> mCachedImageFilePaths;
+    private ArrayList<String> mCachedApkFilePaths;
+    // private ArrayList<String> mCachedSearchFilePaths;
+    private HashMap<String, ArrayList<String>> mCachedSearchResult;
+    private boolean mAudioCached = false;
+
+    private boolean mImageCached = false;
+    private boolean mVideoCached = false;
+    private boolean mApkFilesCached = false;
+    private boolean mSearchFileCached = false;
+    private boolean mLastRelaySearchCancelled = false;
+    private ProgressDialog mRelaySearchDialog;
+    private ProgressDialog mSearchDialog = null;
+    private long mSearchResultLastUpdateTiming;
+    private static final int UPDATE_INTERVAL_BASE = 1000;
+    private final TranslateAnimation mSearchingAnimation = new TranslateAnimation(
+            Animation.RELATIVE_TO_SELF, 0.2f, Animation.RELATIVE_TO_SELF,
+            -0.2f, Animation.RELATIVE_TO_SELF, 0.2f,
+            Animation.RELATIVE_TO_SELF, -0.2f);
+
+    private View mLastFocusedView = null;
+
+    private final Context mContext;
+    protected final FileManager mFileManager;
+    private ThumbnailCreator mThumbnailCreator;
+    private boolean mAbsolutePathMode = true;
+
+    private boolean multi_select_flag = false;
+    private boolean delete_after_copy = false;
+    private View mTaskBar;
+
+    private FilePathNavigator mFilePathNavigator;
+    private TextView mPathLabel;
+    private ImageView mAddressIcon;
+    private ImageView mAddressActionIcon;
+    private TextView mAddressActionInfo;
+    private TextView mInfoLabel;
+    private ImageView mNavBackBtn;
+    // the list used to feed info into the selected file item
+    private ArrayList<String> mMultiSelectedData;
+
+    private FileDataListAdapter mFileDataListAdapter;
+
+    private FileDataGridAdapter mFileDataGridAdapter;
+    private ArrayList<FileItem> mCurrentFileContent;
+    // Comparator used to sort file list
+    @SuppressWarnings("rawtypes")
+    private Comparator mFileSortComparator;
+
+    // Favorite list adapter
+    private FavoriteDataAdapter mFavoriteDataAdapter;
+
+    // mounted device paths
+    private ArrayList<String> mMountedDevicePaths = new ArrayList<String>();
+
+    // internal storage list adapter
+    private DeviceDataAdapter mInternalStorageDataAdapter;
+
+    // external SD card storage list adapter
+    private DeviceDataAdapter mSdcardDataAdapter;
+
+    // USB storage lists adapters
+    private DeviceDataAdapter mUsb1StorageDataAdapter;
+
+    private DeviceDataAdapter mUsb2StorageDataAdapter;
+
+    private DeviceDataAdapter mUsb3StorageDataAdapter;
+
+    private DeviceDataAdapter mUsb4StorageDataAdapter;
+
+    private DeviceDataListener mDeviceDataListener;
+
+    private Handler mUiHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+            case MSG_UPDATE_CURRENT_DIR:
+                updateDirectory(mFileManager.refreshUrlContent());
+                break;
+            case MSG_CURRENT_DIR_UPDATED:
+                if (mUiCallback != null) {
+                    mUiCallback.onUrlContentUpdated((String) msg.obj, msg.arg1,
+                            (msg.arg2 == 1));
+                }
+                notifyFileContentChanged();
+                break;
+            case MSG_SEARCH_RESULT_UPDATED:
+                updateFileManagerPatternPaths();
+                long currentTimeMillis = System.currentTimeMillis();
+                if (currentTimeMillis - mSearchResultLastUpdateTiming > 1500) {
+                    mSearchResultLastUpdateTiming = currentTimeMillis;
+                    updateSearchProgressDialog((String) msg.obj);
+                    if (mCurrentFileContent != null
+                            && mCurrentFileContent.size() < 64) {
+                        updateDirectory(mFileManager.refreshUrlContent());
+                    }
+                }
+                break;
+            case MSG_SEARCH_PATH_UPDATED:
+                long currentTimeMillis1 = System.currentTimeMillis();
+                if (currentTimeMillis1 - mSearchResultLastUpdateTiming > 1500) {
+                    mSearchResultLastUpdateTiming = currentTimeMillis1;
+                    updateSearchProgressDialog((String) msg.obj);
+                }
+                break;
+            case MSG_SEARCH_FINISHED:
+                hideSearchProgressDialog();
+                updateFileManagerPatternPaths();
+                updateDirectory(mFileManager.refreshUrlContent());
+                break;
+            case MSG_SEARCH_CANCELLED:
+                hideSearchProgressDialog();
+                updateDirectory(mFileManager.refreshUrlContent());
+                break;
+            case MSG_RELAY_SEARCH:
+                HashMap<String, String> searchParams = (HashMap<String, String>) msg.obj;
+                String searchStr = searchParams.get(KEY_SEARCH_STR);
+                if (searchStr.equals(FileManager.PATTERN_ALL)) {
+                    relaySearchFilesByType(msg.arg1,
+                            searchParams.get(KEY_SEARCH_DIR),
+                            searchParams.get(KEY_SEARCH_ROOT_DIR), true,
+                            msg.arg2);
+                } else {
+                    relaySearchFilesByStrMatch(msg.arg1, searchStr,
+                            searchParams.get(KEY_SEARCH_DIR),
+                            searchParams.get(KEY_SEARCH_ROOT_DIR), true,
+                            msg.arg2);
+                }
+                break;
+            default:
+                return;
+            }
+        }
+    };
+    private HashMap<String, UserTask> mUserTaskPool = new HashMap<String, UserTask>();
+
+    /**
+     * Creates an controller object. This object is used to communicate most
+     * work from the main activity to other function classes such as
+     * FileExplorer.
+     * 
+     * @param context
+     *            The context of the main activity e.g Main
+     * @param manager
+     *            The FileManager object that was instantiated from Main
+     */
+    public IfAppController(Context context, final FileManager manager) {
+        mContext = context;
+        mFileManager = manager;
+        mFileManager.setFilePathObserver(this);
+        mStorageUtil = StorageUtil.getSingleton(context);
+        DataUtil.getReflectedUtilAPIs();
+
+        mCachedAudioFilePaths = new ArrayList<String>();
+        mCachedImageFilePaths = new ArrayList<String>();
+        mCachedVideoFilePaths = new ArrayList<String>();
+        mCachedApkFilePaths = new ArrayList<String>();
+        // mCachedSearchFilePaths = new ArrayList<String>();
+        mCachedSearchResult = new HashMap<String, ArrayList<String>>();
+
+        mFileDataListAdapter = new FileDataListAdapter();
+        mFileDataGridAdapter = new FileDataGridAdapter();
+        mCurrentFileContent = new ArrayList<FileItem>();
+        mFileSortComparator = Collator.getInstance(DataUtil
+                .getLocaleFromContext(mContext));
+
+        mFavoriteDataAdapter = new FavoriteDataAdapter(mContext,
+                new ArrayList<FavoriteItem>());
+
+        mInternalStorageDataAdapter = new DeviceDataAdapter(mContext,
+                new ArrayList<DeviceItem>());
+        // root dir
+        DeviceItem rootDir = new DeviceItem("/",
+                mStorageUtil.getStorageDescription(R.string.root_dir),
+                mStorageUtil.getStorageDescription(R.string.internal_storage),
+                false, true, StorageUtil.Internal, StorageUtil.TYPE_ROOT);
+        mInternalStorageDataAdapter.add(rootDir);
+
+        mSdcardDataAdapter = new DeviceDataAdapter(mContext,
+                new ArrayList<DeviceItem>());
+        mUsb1StorageDataAdapter = new DeviceDataAdapter(mContext,
+                new ArrayList<DeviceItem>());
+        mUsb2StorageDataAdapter = new DeviceDataAdapter(mContext,
+                new ArrayList<DeviceItem>());
+        mUsb3StorageDataAdapter = new DeviceDataAdapter(mContext,
+                new ArrayList<DeviceItem>());
+        mUsb4StorageDataAdapter = new DeviceDataAdapter(mContext,
+                new ArrayList<DeviceItem>());
+    }
+
+    /**
+     * This method is called from the main activity
+     * 
+     * @param pathLabel
+     *            The label to update as the directory changes
+     * @param addressIcon
+     *            The icon to update as the directory changes
+     * @param addressActionIcon
+     *            The icon to indicate current action on the address
+     * @param addressActionInfo
+     */
+    public void bindAddressIndicator(IfExplorer fileExplorer,
+            TextView pathLabel, ImageView addressIcon,
+            ImageView addressActionIcon, TextView addressActionInfo) {
+        mPathLabel = pathLabel;
+        mAddressIcon = addressIcon;
+        mAddressActionIcon = addressActionIcon;
+        mAddressActionInfo = addressActionInfo;
+
+        updateAddressIndicatorViews(mFileManager.getCurrentUrl(), null);
+    }
+
+    public void bindTaskBar(View taskBarView, FilePathNavigator navigator) {
+        mTaskBar = taskBarView;
+        mFilePathNavigator = navigator;
+        mFilePathNavigator.setNavigationCallback(this);
+    }
+
+    public void cancelAllBackgroundWork() {
+        Log.i(TAG, "== kevin@xmic == cancel all background work");
+        if (mBackgroundWorks != null) {
+            for (AsyncTask<String, Void, ?> task : mBackgroundWorks) {
+                if (task != null
+                        && (task.getStatus() == AsyncTask.Status.RUNNING)) {
+                    task.cancel(true);
+                }
+            }
+        }
+    }
+
+    public void cancelRelaySearchTasks(String reservedTask) {
+        if (mRelaySearchTasks != null) {
+            for (FileOperationAsynTask task : mRelaySearchTasks) {
+                if (task != null && (!task.getTaskId().equals(reservedTask))
+                        && (task.getStatus() == AsyncTask.Status.RUNNING)) {
+                    task.cancel(true);
+                }
+            }
+        }
+
+        mRelaySearchTasks.clear();
+    }
+
+    /**
+     * Will copy a file or folder to another location.
+     * 
+     * @param oldLocation
+     *            from location
+     * @param newLocation
+     *            to location
+     */
+    public void copyFile(String oldLocation, String newLocation) {
+        String[] data = { oldLocation, newLocation };
+
+        FileOperationAsynTask task = new FileOperationAsynTask(COPY_TYPE);
+        mBackgroundWorks.add(task);
+        task.execute(data);
+    }
+
+    /**
+     * 
+     * @param newLocation
+     */
+    public void copyFileMultiSelect(String newLocation) {
+        String[] data;
+        int index = 1;
+
+        if (mMultiSelectedData.size() > 0) {
+            data = new String[mMultiSelectedData.size() + 1];
+            data[0] = newLocation;
+
+            for (String s : mMultiSelectedData) {
+                data[index++] = s;
+            }
+
+            FileOperationAsynTask task = new FileOperationAsynTask(COPY_TYPE);
+            mBackgroundWorks.add(task);
+            task.execute(data);
+        }
+    }
+
+    /**
+     * Will delete the file name that is passed on a background thread.
+     * 
+     * @param name
+     */
+    public void deleteFile(String name) {
+        FileOperationAsynTask task = new FileOperationAsynTask(DELETE_TYPE);
+        mBackgroundWorks.add(task);
+        task.execute(name);
+    }
+
+    public void doScanFilesOfAllPattern() {
+        searchForFilesOfPattern(FileManager.SMART_MUSIC);
+        searchForFilesOfPattern(FileManager.SMART_MOVIES);
+        searchForFilesOfPattern(FileManager.SMART_IMAGE);
+        searchForFilesOfPattern(FileManager.SMART_APK);
+    }
+
+    public void forceRefreshFileListView() {
+        mFileDataListAdapter.notifyDataSetChanged();
+        mFileDataGridAdapter.notifyDataSetChanged();
+    }
+
+    public DeviceDataAdapter getApproximateDeviceAdapter(int position) {
+        switch (position) {
+        case StorageUtil.Internal:
+            return mInternalStorageDataAdapter;
+        case StorageUtil.SDSlot:
+            return mSdcardDataAdapter;
+        case StorageUtil.USBPort1:
+            return mUsb1StorageDataAdapter;
+        case StorageUtil.USBPort2:
+            return mUsb2StorageDataAdapter;
+        case StorageUtil.USBPort3:
+            return mUsb3StorageDataAdapter;
+        case StorageUtil.USBPort4:
+            return mUsb4StorageDataAdapter;
+        default:
+            return null;
+        }
+    }
+
+    public HashMap<String, ArrayList<String>> getCachedSearchResult() {
+        return mCachedSearchResult;
+    }
+
+    public ArrayList<String> getCurrentMountedFileSystems() {
+        ArrayList<String> result = new ArrayList<String>();
+        // root file system
+        result.add("/");
+
+        if (mStorageUtil != null) {
+            ArrayList<String> storageVolumePaths = mStorageUtil
+                    .getMountedStorageVolumePaths();
+            if (storageVolumePaths != null) {
+                result.addAll(storageVolumePaths);
+            }
+        }
+
+        return result;
+    }
+
+    public DeviceDataAdapter getDeviceDataAdapter(int storagePosition) {
+        switch (storagePosition) {
+        case StorageUtil.Internal:
+            return mInternalStorageDataAdapter;
+        case StorageUtil.SDSlot:
+            return mSdcardDataAdapter;
+        case StorageUtil.USBPort1:
+            return mUsb1StorageDataAdapter;
+        case StorageUtil.USBPort2:
+            return mUsb2StorageDataAdapter;
+        case StorageUtil.USBPort3:
+            return mUsb3StorageDataAdapter;
+        case StorageUtil.USBPort4:
+            return mUsb4StorageDataAdapter;
+        default:
+            return null;
+        }
+    }
+
+    public DeviceDataListener getDeviceDataListener() {
+        return mDeviceDataListener;
+    }
+
+    public FavoriteDataAdapter getFavoriteDataAdapter() {
+        return mFavoriteDataAdapter;
+    }
+
+    public FileDataGridAdapter getFileDataGridAdapter() {
+        return mFileDataGridAdapter;
+    }
+
+    public FileDataListAdapter getFileDataListAdapter() {
+        return mFileDataListAdapter;
+    }
+
+    public FileManager getFileManager() {
+        return mFileManager;
+    }
+
+    public FilePathNavigator getFilePathNavigator() {
+        return mFilePathNavigator;
+    }
+
+    public View getTaskBar() {
+        return mTaskBar;
+    }
+
+    public void handleFileEvents(String path) {
+
+    }
+
+    /**
+     * Use this method to determine if the user has selected multiple
+     * files/folders
+     * 
+     * @return returns true if the user is holding multiple objects
+     *         (multi-select)
+     */
+    public boolean hasMultiSelectData() {
+        return (mMultiSelectedData != null && mMultiSelectedData.size() > 0);
+    }
+
+    /**
+     * called to update the favorite contents
+     */
+    public void initializeDefaultFavorites() {
+        if (!mFavoriteDataAdapter.isEmpty()) {
+            mFavoriteDataAdapter.clear();
+        }
+
+        // kevin@xmic: TODO: implement as user configured
+        FavoriteItem favorite_music = new FavoriteItem(FileManager.SMART_MUSIC,
+                mContext.getResources().getString(R.string.music),
+                StorageUtil.TYPE_AUDIO, R.drawable.type_music);
+        mFavoriteDataAdapter.add(favorite_music);
+
+        FavoriteItem favorite_videos = new FavoriteItem(
+                FileManager.SMART_MOVIES, mContext.getResources().getString(
+                        R.string.videos), StorageUtil.TYPE_VIDEO,
+                R.drawable.type_movie);
+        mFavoriteDataAdapter.add(favorite_videos);
+
+        /*
+         * FavoriteItem favorite_pictures = new FavoriteItem(
+         * FileManager.SMART_IMAGE, mContext.getResources().getString(
+         * R.string.pictures), StorageUtil.TYPE_IMAGE, R.drawable.type_picture);
+         * mFavoriteDataAdapter.add(favorite_pictures);
+         */
+
+        FavoriteItem favorite_apks = new FavoriteItem(FileManager.SMART_APK,
+                mContext.getResources().getString(R.string.apkInstaller),
+                StorageUtil.TYPE_APKFILE, R.drawable.type_apk);
+        mFavoriteDataAdapter.add(favorite_apks);
+
+        mFavoriteDataAdapter.notifyDataSetChanged();
+    }
+
+    /**
+     * Indicates whether the user wants to select multiple files or folders at a
+     * time. <br>
+     * <br>
+     * false by default
+     * 
+     * @return true if the user has turned on multi selection
+     */
+    public boolean inMultiSelectMode() {
+        return multi_select_flag;
+    }
+
+    public void intializeStorageDevicesAsync() {
+        StorageDeviceItemGenerator task = new StorageDeviceItemGenerator(
+                GEN_ALL_DEVICE_ITEM);
+        mBackgroundWorks.add(task);
+        task.execute("");
+    }
+
+    @Override
+    public void navigateToPath(String path) {
+        Log.i(TAG, "== kevin@xmic == navigateToPath");
+        updateDirectory(mFileManager.getNextUrlContent(path, true, false));
+    }
+
+    // implement
+    // gem.kevin.filmanager.FileManager.FilePathObserver::notifyOnAllEvents
+    @Override
+    public void notifyOnAllEvents(String path) {
+        mUiHandler.sendEmptyMessage(MSG_UPDATE_CURRENT_DIR);
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (mNavBackBtn == v) {
+            updateDirectory(mFileManager.getPreviousUrlContent());
+        }
+    }
+
+    @Override
+    public void onSearchOpTaskCancelled(FileOperationTask task) {
+        Message msg = mUiHandler.obtainMessage(MSG_SEARCH_CANCELLED);
+        mUiHandler.sendMessage(msg);
+    }
+
+    @Override
+    public void onSearchOpTaskFinished(FileOperationTask task) {
+        Message msg = mUiHandler.obtainMessage(MSG_SEARCH_FINISHED);
+        mUiHandler.sendMessage(msg);
+
+        Log.i(TAG, "onSearchOpTaskFinished");
+        int searchType = task.getOptions().searchType;
+        switch (searchType) {
+        case StorageUtil.TYPE_APKFILE:
+            mApkFilesCached = true;
+            break;
+        case StorageUtil.TYPE_AUDIO:
+            mAudioCached = true;
+            break;
+        case StorageUtil.TYPE_IMAGE:
+            mImageCached = true;
+            break;
+        case StorageUtil.TYPE_VIDEO:
+            mVideoCached = true;
+            break;
+        }
+    }
+
+    @Override
+    public void onSearchOpTaskProgressing(FileOperationTask task,
+            String searchDirPath, boolean dirFinished) {
+        Message msg;
+        if (dirFinished) {
+            msg = mUiHandler.obtainMessage(MSG_SEARCH_RESULT_UPDATED);
+            msg.obj = searchDirPath;
+
+            mUiHandler.sendMessage(msg);
+        } else {
+            msg = mUiHandler.obtainMessage(MSG_SEARCH_PATH_UPDATED);
+            msg.obj = searchDirPath;
+
+            mUiHandler.sendMessage(msg);
+        }
+    }
+
+    public void relaySearchFilesByStrMatch(int searchType, String searchStr,
+            String currentSearchPath, String parentSearchPath, boolean isRelay,
+            int depth) {
+        // Reset cached search result if this is a new search request other than
+        // a relay call
+        if (!isRelay) {
+            mLastRelaySearchCancelled = false;
+            // // mCachedSearchFilePaths.clear();
+        }
+
+        final String identifier;
+        if (parentSearchPath != null) {
+            identifier = String.format(UserTask.USER_TASK_IDENTIFIER_FORMAT,
+                    searchType, searchStr, parentSearchPath);
+        } else {
+            identifier = String.format(UserTask.USER_TASK_IDENTIFIER_FORMAT,
+                    searchType, searchStr, currentSearchPath);
+        }
+
+        final String searchPath = currentSearchPath;
+        final String rootSearchPath = (parentSearchPath != null) ? parentSearchPath
+                : currentSearchPath;
+
+        UserTask userTask;
+        userTask = getUserTaskFromPool(identifier);
+        if (userTask == null) {
+            if (KLOG) {
+                Log.i(TAG, "Create new user task for: " + identifier);
+            }
+            UserTaskController relaySearchHandler = new UserTaskController() {
+                @Override
+                public void doCancel(UserTask task) {
+                    HashSet<AtomicTask> atomicTasks = task.getAllAtomicTasks();
+                    if (atomicTasks != null) {
+                        for (AtomicTask item : atomicTasks) {
+                            item.cancel();
+                        }
+                    }
+                }
+
+                @Override
+                public void doFinish(UserTask task) {
+                    HashSet<AtomicTask> atomicTasks = task.getAllAtomicTasks();
+                    if (atomicTasks != null) {
+                        for (AtomicTask item : atomicTasks) {
+                            item.finish();
+                        }
+                        task.removeAllAtomicTasks();
+                    }
+                }
+
+                @Override
+                public void doPause(UserTask task) {
+                    return;
+                }
+
+                @Override
+                public void doRestart(UserTask task) {
+                    if (!mStorageUtil.isPathDirtyForUsage(searchPath, 0)) {
+                        doFinish(task);
+                    } else {
+                        HashSet<AtomicTask> atomicTasks = task
+                                .getAllAtomicTasks();
+                        if (atomicTasks != null) {
+                            for (AtomicTask item : atomicTasks) {
+                                item.restart();
+                            }
+                        }
+                    }
+                }
+
+                @Override
+                public void doResume(UserTask task) {
+                    return;
+                }
+            };
+
+            userTask = new UserTask(relaySearchHandler, identifier, false);
+            if (KLOG) {
+                Log.i(TAG, "put user task of id: " + identifier
+                        + " into task pool.");
+            }
+            putUserTaskToPool(userTask);
+        }
+
+        FileOperationAsynTask relayTask = new FileOperationAsynTask(
+                RELAY_SEARCH_TASK, searchType, searchStr, searchPath,
+                rootSearchPath, depth);
+        mBackgroundWorks.add(relayTask);
+        mRelaySearchTasks.add(relayTask);
+        userTask.attachAtomicTask(relayTask);
+
+        userTask.restart();
+        if (!isRelay) {
+            showRelaySearchProgressDialog(searchType, searchStr, searchPath);
+        } else if (!mLastRelaySearchCancelled) {
+            if (KLOG) {
+                Log.i(TAG,
+                        "== kevin@xmic == show relay search progress dialog for path: "
+                                + searchPath);
+            }
+            showRelaySearchProgressDialog(searchType, searchStr, searchPath);
+        }
+    }
+
+    /**
+     * kevin@xmic 'Relay search', will search for files match a specific media
+     * type in one directory each time
+     * 
+     * Searching by firing up background work one by one instead of single work
+     * so we can show part of search result when search job is executing.
+     */
+    public void relaySearchFilesByType(int searchType,
+            String currentSearchPath, String parentSearchPath, boolean isRelay,
+            int depth) {
+        // Reset cached search result if this is a new search request other than
+        // a relay call
+        if (!isRelay) {
+            mLastRelaySearchCancelled = false;
+            switch (searchType) {
+            case StorageUtil.TYPE_AUDIO:
+                mCachedAudioFilePaths.clear();
+                break;
+            case StorageUtil.TYPE_VIDEO:
+                mCachedVideoFilePaths.clear();
+                break;
+            case StorageUtil.TYPE_IMAGE:
+                mCachedImageFilePaths.clear();
+                break;
+            case StorageUtil.TYPE_APKFILE:
+                mCachedApkFilePaths.clear();
+                break;
+            default: // do nothing if search request is not supported
+                return;
+            }
+        }
+
+        final String identifier;
+        if (parentSearchPath != null) {
+            identifier = String.format(UserTask.USER_TASK_IDENTIFIER_FORMAT,
+                    searchType, FileManager.PATTERN_ALL, parentSearchPath);
+        } else {
+            identifier = String.format(UserTask.USER_TASK_IDENTIFIER_FORMAT,
+                    searchType, FileManager.PATTERN_ALL, currentSearchPath);
+        }
+
+        if (KLOG) {
+            Log.i(TAG, "== kevin@xmic == identifier is " + identifier + " for "
+                    + currentSearchPath);
+        }
+
+        final String searchPath = currentSearchPath;
+        final String rootSearchPath = (parentSearchPath != null) ? parentSearchPath
+                : currentSearchPath;
+
+        UserTask userTask;
+        userTask = getUserTaskFromPool(identifier);
+        if (userTask == null) {
+            if (KLOG) {
+                Log.i(TAG, "Create new user task for: " + identifier);
+            }
+            UserTaskController relaySearchHandler = new UserTaskController() {
+                @Override
+                public void doCancel(UserTask task) {
+                    HashSet<AtomicTask> atomicTasks = task.getAllAtomicTasks();
+                    if (atomicTasks != null) {
+                        for (AtomicTask item : atomicTasks) {
+                            item.cancel();
+                        }
+                    }
+                }
+
+                @Override
+                public void doFinish(UserTask task) {
+                    HashSet<AtomicTask> atomicTasks = task.getAllAtomicTasks();
+                    if (atomicTasks != null) {
+                        for (AtomicTask item : atomicTasks) {
+                            item.finish();
+                        }
+                        task.removeAllAtomicTasks();
+                    }
+                }
+
+                @Override
+                public void doPause(UserTask task) {
+                    return;
+                }
+
+                @Override
+                public void doRestart(UserTask task) {
+                    if (!mStorageUtil.isPathDirtyForUsage(searchPath, 0)) {
+                        doFinish(task);
+                    } else {
+                        HashSet<AtomicTask> atomicTasks = task
+                                .getAllAtomicTasks();
+                        if (atomicTasks != null) {
+                            for (AtomicTask item : atomicTasks) {
+                                item.restart();
+                            }
+                        }
+                    }
+                }
+
+                @Override
+                public void doResume(UserTask task) {
+                    return;
+                }
+            };
+
+            userTask = new UserTask(relaySearchHandler, identifier, false);
+            if (KLOG) {
+                Log.i(TAG, "put user task of id: " + identifier
+                        + " into task pool.");
+            }
+            putUserTaskToPool(userTask);
+        }
+
+        FileOperationAsynTask relayTask = new FileOperationAsynTask(
+                RELAY_SEARCH_TASK, searchType, FileManager.PATTERN_ALL,
+                searchPath, rootSearchPath, depth);
+        mBackgroundWorks.add(relayTask);
+        mRelaySearchTasks.add(relayTask);
+        userTask.attachAtomicTask(relayTask);
+
+        userTask.restart();
+        if (!isRelay) {
+            showRelaySearchProgressDialog(searchType, FileManager.PATTERN_ALL,
+                    searchPath);
+        } else if (!mLastRelaySearchCancelled) {
+            if (KLOG) {
+                Log.i(TAG,
+                        "== kevin@xmic == show relay search progress dialog for path: "
+                                + searchPath);
+            }
+            showRelaySearchProgressDialog(searchType, FileManager.PATTERN_ALL,
+                    searchPath);
+        }
+    }
+
+    public void resetCachedFilePaths() {
+        if (!mCachedAudioFilePaths.isEmpty()) {
+            mCachedAudioFilePaths.clear();
+        }
+        if (!mCachedImageFilePaths.isEmpty()) {
+            mCachedImageFilePaths.clear();
+        }
+        if (!mCachedVideoFilePaths.isEmpty()) {
+            mCachedVideoFilePaths.clear();
+        }
+        if (!mCachedApkFilePaths.isEmpty()) {
+            mCachedApkFilePaths.clear();
+        }
+        /*
+         * if (!mCachedSearchFilePaths.isEmpty()) {
+         * mCachedSearchFilePaths.clear(); }
+         */
+        if (!mCachedSearchResult.isEmpty()) {
+            mCachedSearchResult.clear();
+        }
+
+        mAudioCached = false;
+        mImageCached = false;
+        mVideoCached = false;
+        mApkFilesCached = false;
+        mSearchFileCached = false;
+
+        updateFileManagerPatternPaths();
+    }
+
+    public void searchFiles(int searchType, String searchStr, String searchDir,
+            int searchDepth, boolean silent) {
+        boolean cached = false;
+        switch (searchType) {
+        case StorageUtil.TYPE_AUDIO:
+            cached = mAudioCached;
+            break;
+        case StorageUtil.TYPE_VIDEO:
+            cached = mVideoCached;
+            break;
+        case StorageUtil.TYPE_IMAGE:
+            cached = mImageCached;
+            break;
+        case StorageUtil.TYPE_APKFILE:
+            cached = mApkFilesCached;
+            break;
+        }
+
+        if (cached) {
+            // updateDirectory(mFileManager.refreshUrlContent());
+            return;
+        } else {
+            Log.i(TAG, "Not cached.");
+        }
+
+        HashMap<String, Object> searchParams = new HashMap<String, Object>();
+        searchParams.put(FileOperationOptions.KEY_SEARCH_DIR, searchDir);
+        searchParams.put(FileOperationOptions.KEY_SEARCH_RESEVERD_DIR, null);
+        searchParams.put(FileOperationOptions.KEY_SEARCH_DEPTH,
+                Integer.valueOf(searchDepth));
+        searchParams.put(FileOperationOptions.KEY_SEARCH_RECORD_LIMIT,
+                IfConfig.MAX_LISTITEM_COUNT);
+        switch (searchType) {
+        case StorageUtil.TYPE_AUDIO:
+            mCachedAudioFilePaths.clear();
+            searchParams.put(FileOperationOptions.KEY_SEARCH_SCOPE,
+                    DataUtil.getSupportedAudioFileExtensions());
+            searchParams.put(FileOperationOptions.KEY_SEARCH_OUTPUT,
+                    mCachedAudioFilePaths);
+            break;
+        case StorageUtil.TYPE_VIDEO:
+            mCachedVideoFilePaths.clear();
+            searchParams.put(FileOperationOptions.KEY_SEARCH_SCOPE,
+                    DataUtil.getSupportedVideoFileExtensions());
+            searchParams.put(FileOperationOptions.KEY_SEARCH_OUTPUT,
+                    mCachedVideoFilePaths);
+            break;
+        case StorageUtil.TYPE_IMAGE:
+            mCachedImageFilePaths.clear();
+            searchParams.put(FileOperationOptions.KEY_SEARCH_SCOPE,
+                    DataUtil.getSupportedImageFileExtensions());
+            searchParams.put(FileOperationOptions.KEY_SEARCH_OUTPUT,
+                    mCachedImageFilePaths);
+            break;
+        case StorageUtil.TYPE_APKFILE:
+            mCachedApkFilePaths.clear();
+            searchParams.put(FileOperationOptions.KEY_SEARCH_SCOPE,
+                    DataUtil.getSupportedAppInstallerFileExtensions());
+            searchParams.put(FileOperationOptions.KEY_SEARCH_OUTPUT,
+                    mCachedApkFilePaths);
+            break;
+        case StorageUtil.TYPE_FILE:
+            String searchId = FileManager.buildSearchId(searchStr, searchDir);
+            ArrayList<String> searchResult = mCachedSearchResult.get(searchId);
+            if (searchResult != null) {
+                Log.i(TAG, "Ever found.");
+                searchResult.clear();
+            } else {
+                searchResult = new ArrayList<String>();
+                mCachedSearchResult.put(searchId, searchResult);
+            }
+
+            searchParams.put(FileOperationOptions.KEY_SEARCH_SCOPE, null);
+            searchParams.put(FileOperationOptions.KEY_SEARCH_OUTPUT,
+                    searchResult);
+            searchParams.put(FileOperationOptions.KEY_SEARCH_DEPTH,
+                    Integer.valueOf(searchDepth) + 100);
+            break;
+        default: // do nothing if search request is not supported
+            return;
+        }
+
+        FileOperationOptions options = FileOperationTask
+                .makeDefaultOptions(FileOperationTask.OP_TYPE_SEARCH_FILE);
+        options.setSearchParams(searchParams);
+        options.setSearchType(searchType);
+        ArrayList<String> searchTargets = new ArrayList<String>();
+        searchTargets.add(searchStr);
+
+        Time time = new Time();
+        time.setToNow();
+        String taskId = String.format("%02d:%02d:%02d-search", time.hour,
+                time.minute, time.second);
+        final FileOperationTask searchTask = new FileOperationTask(mContext,
+                taskId, options, searchTargets, this);
+        searchTask.start();
+        mSearchResultLastUpdateTiming = System.currentTimeMillis();
+        if (!silent) {
+            showSearchProgressDialog(searchDir, searchStr, searchType,
+                    searchTask);
+        }
+
+        updateDirectory(mFileManager.refreshUrlContent());
+    }
+
+    /**
+     * Will search for a file then display all files with the search parameter
+     * in its name
+     * 
+     * @param name
+     *            the name to search for
+     */
+    public void searchForFile(String name) {
+        FileOperationAsynTask task = new FileOperationAsynTask(SEARCH_TYPE);
+        mBackgroundWorks.add(task);
+        task.execute(name);
+    }
+
+    /**
+     * 'Smart search', will search for files match a specific media type, b
+     */
+    public void searchForFilesOfPattern(String filePattern) {
+        // clear current file list at first
+        clearFileContent();
+
+        int subType = -1;
+        if (filePattern.endsWith(FileManager.SMART_MUSIC)) {
+            subType = StorageUtil.TYPE_AUDIO;
+        } else if (filePattern.endsWith(FileManager.SMART_MOVIES)) {
+            subType = StorageUtil.TYPE_VIDEO;
+        } else if (filePattern.endsWith(FileManager.SMART_IMAGE)) {
+            subType = StorageUtil.TYPE_IMAGE;
+        } else if (filePattern.endsWith(FileManager.SMART_APK)) {
+            subType = StorageUtil.TYPE_APKFILE;
+        }
+
+        FileOperationAsynTask task = new FileOperationAsynTask(
+                SMART_SEARCH_TYPE, subType, null, "", null, 10);
+        mBackgroundWorks.add(task);
+        task.execute("");
+    }
+
+    /**
+     * If you want to move a file (cut/paste) and not just copy/paste use this
+     * method to tell the file manager to delete the old reference of the file.
+     * 
+     * @param delete
+     *            true if you want to move a file, false to copy the file
+     */
+    public void setDeleteAfterCopy(boolean delete) {
+        delete_after_copy = delete;
+    }
+
+    public void setDeviceDataListener(DeviceDataListener listener) {
+        mDeviceDataListener = listener;
+    }
+
+    public void setPathMode(boolean absolute) {
+        mAbsolutePathMode = absolute;
+    }
+
+    /**
+     * Set this true and thumbnails will be used as the icon for image files.
+     * False will show a default image.
+     * 
+     * @param show
+     */
+    public void setShowThumbnails(boolean show) {
+    }
+
+    /**
+     * 
+     * @param color
+     */
+    public void setTextColor(int color) {
+    }
+
+    public void setUiCallback(UiCallback callback) {
+        mUiCallback = callback;
+    }
+
+    /**
+     * this will stop our background thread that creates thumb nail icons if the
+     * thread is running. this should be stopped when ever we leave the folder
+     * the image files are in.
+     */
+    public void stopThumbnailThread() {
+        if (mThumbnailCreator != null) {
+            mThumbnailCreator.setCancelThumbnails(true);
+            mThumbnailCreator = null;
+        }
+    }
+
+    /**
+     * This will extract a ZIP file to the same directory.
+     * 
+     * @param file
+     *            the ZIP file name
+     * @param path
+     *            the path were the ZIP file will be extracted (the current
+     *            directory)
+     */
+    public void unZipFile(String file, String path) {
+        FileOperationAsynTask task = new FileOperationAsynTask(UNZIP_TYPE);
+        mBackgroundWorks.add(task);
+        task.execute(file, path);
+    }
+
+    /**
+     * This method will take a ZIP file and extract it to another location
+     * 
+     * @param name
+     *            the name of the of the new file (the directory name is used)
+     * @param newDir
+     *            the directory where to extract to
+     * @param oldDir
+     *            the directory where the ZIP file is
+     */
+    public void unZipFileToDir(String name, String newDir, String oldDir) {
+        FileOperationAsynTask task = new FileOperationAsynTask(UNZIPTO_TYPE);
+        mBackgroundWorks.add(task);
+        task.execute(name, newDir, oldDir);
+    };
+
+    /**
+     * called to update the address bar as the user navigates the storage file
+     * system
+     */
+    public void updateAddressIndicatorViews(String currentPath, String extraInfo) {
+        if (mAddressIcon == null || mAddressActionIcon == null
+                || mPathLabel == null) {
+            if (KLOG) {
+                Log.i(TAG,
+                        "== kevin@xmic == Address bar view hasn't been binded.");
+            }
+            return;
+        }
+    }
+
+    public void updateDirectory(ArrayList<String> fileContent) {
+        updateDirectory(fileContent, false);
+    }
+
+    public void updateDirectory(ArrayList<String> fileContent,
+            boolean fromHistory) {
+        // TODO: too much work on main thread, refactor to working thread
+        Log.i(TAG, "update directory");
+        clearFileContent();
+        if (fileContent == null) {
+            notifyFileContentChanged();
+            return;
+        }
+
+        FileContentUpdateProcedure updateProcedure = new FileContentUpdateProcedure(
+                fileContent, fromHistory);
+        // Run work thread
+        // new Thread(updateProcedure).start();
+        // RUn on main thread
+        updateProcedure.run();
+    }
+
+    public void updateFileManagerPatternPaths() {
+        if (mFileManager != null) {
+            mFileManager.setAudioPatternPath(mCachedAudioFilePaths);
+            mFileManager.setVideoPatternPath(mCachedVideoFilePaths);
+            mFileManager.setImagePatternPath(mCachedImageFilePaths);
+            mFileManager.setApkPatternPath(mCachedApkFilePaths);
+            mFileManager.setSearchFilePatternPath(mCachedSearchResult);
+        }
+    }
+
+    public void updateNavigationViews(String currentPath) {
+        if (mNavBackBtn == null) {
+            if (KLOG) {
+                Log.i(TAG,
+                        "== kevin@xmic == Navigation button views haven't been binded.");
+            }
+            return;
+        }
+    }
+
+    public void updateStorageDevice(String mountPoint, String newState,
+            boolean async) {
+        int mountPort = StorageUtil.getMountPort(mountPoint);
+        DeviceDataAdapter adapter = getApproximateDeviceAdapter(mountPort);
+        if (adapter == null) {
+            Log.e(TAG, "Can't get adapter for path: " + mountPoint);
+            return;
+        }
+
+        if (newState.equals(Environment.MEDIA_MOUNTED)) {
+            if (async) {
+                StorageDeviceItemGenerator task = new StorageDeviceItemGenerator(
+                        GEN_SINGLE_DISK_DEVICE_ITEM);
+                mBackgroundWorks.add(task);
+                task.execute(mountPoint);
+            } else {
+                // These operations are time-consuming
+                // Be careful to run them in main thread
+                IfStorageVolume volume = mStorageUtil
+                        .getIfStorageVolumeFromPath(mountPoint);
+                DeviceItem newDeviceItem = generateDeviceItemFromStorageVolume(volume);
+                adapter.add(newDeviceItem);
+                adapter.notifyDataSetChanged();
+                getDeviceDataListener().onStorageDeviceItemChanged();
+            }
+        } else if (newState.equals(Environment.MEDIA_UNMOUNTED)) {
+            for (int i = 0; i < adapter.getCount(); i++) {
+                DeviceItem target = adapter.getItem(i);
+                String path = target.getPath();
+                if (path.equals(mountPoint)) {
+                    mMountedDevicePaths.remove(path);
+                    adapter.remove(target);
+                    adapter.notifyDataSetChanged();
+                    mDeviceDataListener.onStorageDeviceItemChanged();
+                    break;
+                }
+            }
+        } else if (newState.equals(Environment.MEDIA_BAD_REMOVAL)) {
+            if (!adapter.isEmpty()) {
+                for (int i = 0; i < adapter.getCount(); i++) {
+                    String path = adapter.getItem(i).getPath();
+                    mMountedDevicePaths.remove(path);
+                }
+                adapter.clear();
+                adapter.notifyDataSetChanged();
+                mDeviceDataListener.onStorageDeviceItemChanged();
+            }
+        }
+    }
+
+    public void updateStorageDevices(boolean async) {
+
+    }
+
+    /**
+     * Creates a ZIP file
+     * 
+     * @param zipPath
+     *            the path to the directory you want to ZIP
+     */
+    public void zipFile(String zipPath) {
+        FileOperationAsynTask task = new FileOperationAsynTask(ZIP_TYPE);
+        mBackgroundWorks.add(task);
+        task.execute(zipPath);
+    }
+
+    private void appendFileItem(String path) {
+        synchronized (mCurrentFileContent) {
+            FileItem fileItem = new FileItem(mContext, path);
+            fileItem.build();
+            mCurrentFileContent.add(fileItem);
+        }
+    }
+
+    private void clearFileContent() {
+        synchronized (mCurrentFileContent) {
+            if (!mCurrentFileContent.isEmpty()) {
+                mCurrentFileContent.clear();
+            }
+        }
+    }
+
+    private DeviceItem generateDeviceItemFromStorageVolume(
+            IfStorageVolume volume) {
+        if (volume == null) {
+            return null;
+        }
+
+        String mountPoint = volume.getPath();
+        boolean primary = volume.isPrimary();
+        boolean removable = volume.isRemovable();
+        boolean emulated = volume.isEmulated();
+        boolean mounted = mStorageUtil.isMounted(mountPoint);
+        if (!mounted) {
+            // Currently doesn't support mount operation on single volume,
+            // so no need to show unmounted volumes
+            return null;
+        }
+
+        int mountPort = mStorageUtil.getMountPort(mountPoint);
+        int type;
+        switch (mountPort) {
+        case StorageUtil.Internal:
+            type = StorageUtil.TYPE_HOME;
+            break;
+        case StorageUtil.SDSlot:
+            type = StorageUtil.TYPE_SDCARD;
+            break;
+        default:
+            type = StorageUtil.TYPE_UDISK;
+        }
+        String volumeLabel = mStorageUtil.readVolIdForPath(mountPoint,
+                StorageUtil.VOLID_TAG_LABEL);
+        String diskName = mStorageUtil.readDiskNameForPath(mountPoint);
+        final DeviceItem deviceItem = new DeviceItem(mountPoint,
+                (volumeLabel != null) ? volumeLabel : mStorageUtil
+                        .getStorageDescription(emulated ? R.string.home_dir
+                                : R.string.removable_disk),
+                (diskName != null && !diskName.isEmpty()) ? diskName : null,
+                removable, mounted, mountPort, type);
+
+        return deviceItem;
+    }
+
+    private String getPatternStrFromPattern(String pattern) {
+        if (pattern.equals(FileManager.SMART_IMAGE)) {
+            return getStringFromResId(R.string.image_file);
+        } else if (pattern.equals(FileManager.SMART_MOVIES)) {
+            return getStringFromResId(R.string.video_file);
+        } else if (pattern.equals(FileManager.SMART_MUSIC)) {
+            return getStringFromResId(R.string.audio_file);
+        } else if (pattern.equals(FileManager.SMART_APK)) {
+            return getStringFromResId(R.string.apk_file);
+        } else {
+            return getStringFromResId(R.string.file);
+        }
+    }
+
+    private String getStringFromResId(int resId) {
+        return mContext.getResources().getString(resId);
+    }
+
+    private UserTask getUserTaskFromPool(String identifier) {
+        if (mUserTaskPool.containsKey(identifier)) {
+            return mUserTaskPool.get(identifier);
+        }
+
+        return null;
+    }
+
+    private void hideRelaySearchProgressDialog() {
+        if (mRelaySearchDialog != null) {
+            mRelaySearchDialog.dismiss();
+        }
+    }
+
+    private void hideSearchProgressDialog() {
+        if (mSearchDialog != null) {
+            mSearchDialog.dismiss();
+        }
+    }
+
+    private void notifyFileContentChanged() {
+        synchronized (mCurrentFileContent) {
+            mFileDataListAdapter.clear();
+            mFileDataListAdapter.addAll(mCurrentFileContent);
+            mFileDataGridAdapter.clear();
+            mFileDataGridAdapter.addAll(mCurrentFileContent);
+        }
+    }
+
+    private void putUserTaskToPool(UserTask userTask) {
+        // replace out dated task with new task
+        if (mUserTaskPool.containsKey(userTask.getTaskIdentifier())) {
+            mUserTaskPool.remove(userTask.getTaskIdentifier());
+        }
+
+        mUserTaskPool.put(userTask.getTaskIdentifier(), userTask);
+    }
+
+    private void showRelaySearchProgressDialog(int searchType,
+            String searchStr, String searchPath) {
+        if (mRelaySearchDialog == null) {
+            mRelaySearchDialog = new ProgressDialog(mContext);
+        }
+
+        String dlgTitleSuffix = getStringFromResId(R.string.progress_search_title);
+        String dlgTitle;
+        switch (searchType) {
+        case StorageUtil.TYPE_AUDIO:
+            dlgTitle = dlgTitleSuffix + " "
+                    + getStringFromResId(R.string.audio_file);
+            break;
+        case StorageUtil.TYPE_VIDEO:
+            dlgTitle = dlgTitleSuffix + " "
+                    + getStringFromResId(R.string.video_file);
+            break;
+        case StorageUtil.TYPE_IMAGE:
+            dlgTitle = dlgTitleSuffix + " "
+                    + getStringFromResId(R.string.image_file);
+            break;
+        case StorageUtil.TYPE_APKFILE:
+            dlgTitle = dlgTitleSuffix + " "
+                    + getStringFromResId(R.string.apk_file);
+            break;
+        case StorageUtil.TYPE_FILE:
+            dlgTitle = "'" + searchStr + "'";
+        default:
+            return;
+        }
+        String dlgMessage = getStringFromResId(R.string.progress_relay_search_message)
+                + " " + searchPath;
+        mRelaySearchDialog.setTitle(dlgTitle);
+        mRelaySearchDialog.setMessage(dlgMessage);
+        mRelaySearchDialog.setCancelable(false);
+        mRelaySearchDialog.setButton(DialogInterface.BUTTON_NEGATIVE,
+                getStringFromResId(R.string.stop),
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        cancelRelaySearchTasks(null);
+                        mLastRelaySearchCancelled = true;
+                        mRelaySearchDialog.dismiss();
+                    }
+                });
+        mRelaySearchDialog.show();
+    }
+
+    private void showSearchProgressDialog(String searchPath, String searchStr,
+            int searchType, final FileOperationTask searchTask) {
+        if (mSearchDialog == null) {
+            mSearchDialog = new ProgressDialog(mContext);
+        }
+
+        Resources resources = mContext.getResources();
+        String name = "";
+        switch (searchType) {
+        case StorageUtil.TYPE_AUDIO:
+            name = resources.getString(R.string.audio_file);
+            break;
+        case StorageUtil.TYPE_VIDEO:
+            name = resources.getString(R.string.video_file);
+            break;
+        case StorageUtil.TYPE_IMAGE:
+            name = resources.getString(R.string.image_file);
+            break;
+        case StorageUtil.TYPE_APKFILE:
+            name = resources.getString(R.string.apk_file);
+            break;
+        case StorageUtil.TYPE_FILE:
+            name = "'" + searchStr + "'";
+            break;
+        }
+
+        String title;
+        if (searchType == StorageUtil.TYPE_FILE) {
+            title = resources.getString(R.string.search_dlg_title, name);
+        } else {
+            title = resources.getString(R.string.global_search_dlg_title, name);
+        }
+        String message = resources.getString(R.string.search_dlg_message,
+                searchPath);
+        mSearchDialog.setTitle(title);
+        mSearchDialog.setMessage(message);
+        mSearchDialog.setCancelable(false);
+        mSearchDialog.setButton(DialogInterface.BUTTON_NEGATIVE,
+                resources.getString(R.string.cancel),
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        searchTask.cancel();
+                        mSearchDialog.dismiss();
+                    }
+                });
+
+        mSearchDialog.show();
+    }
+
+    @SuppressWarnings("unused")
+    private void startSearchingAnimation(ImageView viewToApplyAnimation) {
+        if (viewToApplyAnimation != null && mSearchingAnimation != null) {
+            mSearchingAnimation.setInterpolator(new LinearInterpolator());
+            mSearchingAnimation.setDuration(300);
+            mSearchingAnimation.setRepeatCount(Animation.INFINITE);
+            viewToApplyAnimation.setVisibility(View.VISIBLE);
+            mLastFocusedView = ((Activity) mContext).getCurrentFocus();
+            viewToApplyAnimation.requestFocus();
+            viewToApplyAnimation.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    cancelRelaySearchTasks(null);
+                    mLastRelaySearchCancelled = true;
+                }
+            });
+            viewToApplyAnimation.startAnimation(mSearchingAnimation);
+        }
+    }
+
+    @SuppressWarnings("unused")
+    private void stopSearchingAnimation(ImageView viewToApplyAnimation) {
+        if (viewToApplyAnimation != null) {
+            viewToApplyAnimation.clearAnimation();
+            if (mLastFocusedView != null) {
+                mLastFocusedView.requestFocus();
+            }
+            viewToApplyAnimation.setVisibility(View.GONE);
+        }
+    }
+
+    private void updateSearchProgressDialog(String searchPath) {
+        if (mSearchDialog != null) {
+            Resources resources = mContext.getResources();
+            mSearchDialog.setMessage(resources.getString(
+                    R.string.search_dlg_message, searchPath));
+        }
+    }
+}

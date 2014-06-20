@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+
+    <string name="app_name">"IF File Explorer"</string>
+    <string name="dlg_ok">"OK"</string>
+    <string name="dlg_confirm_eject_text">"If you eject the storage, some apps you are using will stop and may be unavailable until you reconnect the storage."</string>
+    <string name="dlg_prompt_ejecting_text">"The storage is ejecting, please wait..."</string>
+    <string name="dlg_eject_failed_text">"Couldn\'t eject storage. Try again later."</string>
+    <string name="eject_">"Eject"</string>
+    <string name="ejecting_">"Ejecting"</string>
+    <string name="failed">"failed"</string>
+    <string name="favorite">Favorite</string>
+    <string name="category">Category</string>
+    <string name="device">Device</string>
+    <string name="local">Local</string>
+    <string name="local_disk">"Local Disk"</string>
+    <string name="internal_storage">Internal Storage</string>
+    <string name="internal_sdcard">"INTERNAL SD CARD"</string>
+    <string name="sdcard_storage">"SD CARD"</string>
+    <string name="usb_storage">"USB Storage"</string>
+    <string name="usb1_storage">"USB Storage 1"</string>
+    <string name="usb2_storage">"USB Storage 2"</string>
+    <string name="usb3_storage">"USB Storage 3"</string>
+    <string name="usb4_storage">"USB Storage 4"</string>
+    <string name="usb5_storage">"USB Storage 5"</string>
+    <string name="usb_storage_a">"USB Storage A"</string>
+    <string name="usb_storage_b">"USB Storage B"</string>
+    <string name="usb_storage_c">"USB Storage C"</string>
+    <string name="usb_storage_d">"USB Storage D"</string>
+    <string name="usb_storage_e">"USB Storage E"</string>
+    <string name="usb_storage_f">"USB Storage F"</string>
+    <string name="favorite_home">"Home"</string>
+    <string name="downloads">"Downloads"</string>
+    <string name="space_available">"Available"</string>
+    <string name="space_total">"Total"</string>
+    <string name="back">"Back"</string>
+    <string name="stop">"Stop"</string>
+    <string name="go_parent_dir">"Go to parent directory"</string>
+    <string name="eject_inform_text">"will be ejected."</string>
+    <string name="read_fail_permission">"Can\'t read folder due to permissions"</string>
+    <string name="back_again_quit">"Press \'back\' again to quit."</string>
+    <string name="cannot_find_application">"Sorry, couldn't find an application to open the file."</string>
+    <string name="cannot_find_">"Couldn\'t find "</string>
+    <string name="copy_paste_succeed">"File successfully copied and pasted"</string>
+    <string name="copy_paste_failed">"Copy pasted failed"</string>
+    <string name="found_">"Found "</string>
+    <string name="_files">" file(s)"</string>
+    <string name="hidden_mark">"(hidden)"</string>
+    <string name="item">"item"</string>
+    <string name="items">"items"</string>
+    <string name="audio_file">"audo files"</string>
+    <string name="video_file">"video files"</string>
+    <string name="image_file">"image files"</string>
+    <string name="apk_file">"apk files"</string>
+    <string name="cancel">"Cancel"</string>
+    <string name="progress_search_title">"Searching"</string>
+    <string name="progress_relay_search_message">"Searching in directory"</string>
+    <string name="progress_search_message">"Searching current device storages, please wait..."</string>
+    <string name="progress_copy_title">"Copying"</string>
+    <string name="progress_copy_message">"Copying file..."</string>
+    <string name="progress_delete_title">"Deleting"</string>
+    <string name="progress_delete_message">"Deleting files..."</string>
+    <string name="progress_unzip_title">"Unzipping"</string>
+    <string name="progress_unzip_message">"Unpacking zip file please wait..."</string>
+    <string name="progress_zip_title">"Zipping"</string>
+    <string name="progress_zip_message">"Zipping..."</string>
+    <string name="utility">"UTILITY"</string>
+    <string name="utility_app_cache_cleaner">"Garbage Cleaner"</string>
+    <string name="no_cache_item">"No cache item."</string>
+    <string name="disabled">"Disabled"</string>
+    <string name="activity_loading">"Loading\u2026"</string>
+    <string name="invalid_size_value">"Unable to compute package size"</string>
+    <string name="computing_size">"Computing\u2026"</string>
+    <string name="memory">"RAM"</string>
+    <string name="application_info_label">"App info"</string>
+    <string name="sd_card_storage">"SD card"</string>
+    <string name="filter_apps_all">"All"</string>
+    <string name="filter_apps_ondevice">"Internal Storage"</string>
+    <string name="filter_apps_running">"Running"</string>
+    <string name="filter_apps_onsdcard">"SD Card"</string>
+    <string name="clean_app_cache">"Clean Cache"</string>
+    <string name="clean_residue">"Clean Residue"</string>
+    <string name="device_storage_capability">"Device capability"</string>
+    <string name="sdcard_storage_capability">"SD card capability"</string>
+    <string name="used_size">"Used: <xliff:g id="memory">%1$s</xliff:g>"</string>
+    <string name="free_size">"Free: <xliff:g id="memory">%1$s</xliff:g>"</string>
+    <string name="clean">"Clean"</string>
+    <string name="cache_items_">"Cache items: <xliff:g id="count">%1$s</xliff:g>"</string>
+    <string name="residual_items_">"Residual items: <xliff:g id="count">%1$s</xliff:g>"</string>
+    <string name="occupying_size_">"Size: <xliff:g id="memory">%1$s</xliff:g>"</string>
+    <string name="select_all_recommended_delete">"Select all recommended items"</string>
+    <string name="start_clean_cache">"Cache files will be cleaned"</string>
+    <string name="start_clean_residual">"Residual files will be cleaned"</string>
+    <string name="no_permission_delete_cache">"You must have root permission to delete cache of specified package."</string>
+    <string name="search">Search</string>
+    <string name="search_record">Search Record</string>
+    <string name="global_search">Global search</string>
+    <string name="rec_search_current_dir">Search in <xliff:g id="cur_dir">%1$s</xliff:g></string>
+    <string name="create">New</string>
+    <string name="copy">Copy</string>
+    <string name="cut">Cut</string>
+    <string name="paste">Paste</string>
+    <string name="remove">Remove</string>
+    <string name="unzip">Unzip</string>
+    <string name="folder">folder</string>
+    <string name="file">file</string>
+    <string name="create_file">"New a file"</string>
+    <string name="create_folder">"New a folder"</string>
+    <string name="input_new_folder_name">Please input a folder name</string>
+    <string name="input_new_file_name">Please input a file name</string>
+    <string name="default_folder_name">New Folder</string>
+    <string name="default_file_name">New File</string>
+    <string name="invalid_clip_removed">"<xliff:g id="num">%1$s</xliff:g> invalid clip item removed."</string>
+    <string name="invalid_clip_found">"<xliff:g id="num">%1$s</xliff:g> invalid clip item found, ignored from pasting. Please remove them from clipboard."</string>
+    <string name="no_available_clip">"No available clip!"</string>
+    <string name="error_invalid_src_path">Source path doesn\'t exist or is invalid.</string>
+    <string name="error_invalid_target_path">"Target path is invalid."</string>
+    <string name="error_empty_name">Name can\'t be empty.</string>
+    <string name="error_file_exists">A file with the same name already exists.</string>
+    <string name="error_folder_exists">A folder with the same name already exists.</string>
+    <string name="permission_insufficient">Permission insufficient.</string>
+    <string name="error_io_occur">I/O error occur.</string>
+    <string name="error_unsupported_type">Unsupported type.</string>
+    <string name="error_unknown">Encounter unknown error.</string>
+    <string name="select_all">Select All</string>
+    <string name="deselect_all">Deselect All</string>
+    <string name="icon">Icon</string>
+    <string name="name">Name</string>
+    <string name="clipboard">Clipboard</string>
+    <string name="rename">Rename</string>
+    <string name="pasteAll">Paste All</string>
+    <string name="clearAll">Clear All</string>
+    <string name="close">Close</string>
+    <string name="clear">Clear</string>
+    <string name="pasteSelect">Paste Selected</string>
+    <string name="clearSelect">Clear Selected</string>
+    <string name="clearAfterPaste">Clear items from clipboard after paste</string>
+    <string name="_copyItem">" Copy Item"</string>
+    <string name="_cutItem">" Cut Item"</string>
+    <string name="_deleteItem">" Delete Item"</string>
+    <string name="select_item">"Select Items"</string>
+    <string name="switch_mode">"Switch mode"</string>
+    <string name="view_as_list">View as list</string>
+    <string name="view_as_grid">View as grid</string>
+    <string name="view">View</string>
+    <string name="otherClips">&lt;other clips&gt;</string>
+    <string name="overwrite">Overwrite</string>
+    <string name="overwrite_all">Overwrite all</string>
+    <string name="overwrite_prompt">"The same filename already exists. Do you want to overwrite it?"</string>
+    <string name="skip">Skip</string>
+    <string name="skip_all">Skip all</string>
+    <string name="source_file">"Source file"</string>
+    <string name="dest_file">"Dest file"</string>
+    <string name="size">Size</string>
+    <string name="modified">Modified</string>
+    <string name="applyToAll">"Apply to all"</string>
+    <string name="newer">(Newer)</string>
+    <string name="refresh">Refresh</string>
+    <string name="windows">Windows</string>
+    <string name="type">Type</string>
+    <string name="more">More</string>
+    <string name="share">Share</string>
+    <string name="openAs">Open As</string>
+    <string name="addToFavorite">Add to favorite</string>
+    <string name="send">Send</string>
+    <string name="compress">Compress</string>
+    <string name="properties">Properties</string>
+    <string name="moveTo">Move to</string>
+    <string name="copyTo">Copy to</string>
+    <string name="delete">Delete</string>
+    <string name="readable">Readable</string>
+    <string name="writable">Writable</string>
+    <string name="hidden">Hidden</string>
+    <string name="filter">Filter</string>
+    <string name="Path">Path</string>
+    <string name="Contains">Contains</string>
+    <string name="fullpath">full path</string>
+    <string name="checksum">Checksum</string>
+    <string name="calculate">Calculate</string>
+    <string name="calculating">"Calculating..."</string>
+    <string name="save">Save</string>
+    <string name="cannot_read">cannot read</string>
+    <string name="filterOut">Filter out</string>
+    <string name="folder_created">"Folder \"<xliff:g id="name">%1$s</xliff:g>\" created."</string>
+    <string name="new_success">"Create <xliff:g id="type">%1$s</xliff:g><xliff:g id="name">%2$s</xliff:g> success!"</string>
+    <string name="new_failed">"Create <xliff:g id="type">%1$s</xliff:g><xliff:g id="name">%2$s</xliff:g> failed!\n<xliff:g id="reason">%3$s</xliff:g>"</string>
+    <string name="delete_prompt">"Are you sure to delete \"<xliff:g id="name">%1$s</xliff:g>\" ?"</string>
+    <string name="move_succeed">"\"<xliff:g id="name">%1$s</xliff:g>\" successfully moved."</string>
+    <string name="move_failed">"Failed to move \"<xliff:g id="name">%1$s</xliff:g>\"!\n<xliff:g id="reason">%2$s</xliff:g>"</string>
+    <string name="delete_succeed">"<xliff:g id="name">%1$s</xliff:g> successfully deleted."</string>
+    <string name="delete_failed">"Failed to delete <xliff:g id="name">%1$s</xliff:g>!\n<xliff:g id="reason">%2$s</xliff:g>"</string>
+    <string name="rename_succeed">"<xliff:g id="oldName">%1$s</xliff:g> successfully renamed to <xliff:g id="newName">%2$s</xliff:g>."</string>
+    <string name="rename_failed">"Failed to rename <xliff:g id="name">%1$s</xliff:g>!\n<xliff:g id="reason">%2$s</xliff:g>"</string>
+    <string name="info">Info</string>
+    <string name="readOnly">read only</string>
+    <string name="readWrite">read/write</string>
+    <string name="system">system</string>
+    <string name="mark">Mark</string>
+    <string name="interested">Interested</string>
+    <string name="uninterested">Uninterested</string>
+    <string name="marked">Marked</string>
+    <string name="files">files</string>
+    <string name="folders">folders</string>
+    <string name="music">Music</string>
+    <string name="videos">Videos</string>
+    <string name="movies">Movies</string>
+    <string name="pictures">Pictures</string>
+    <string name="photos">Photos</string>
+    <string name="apkInstaller">APK Installers</string>
+    <string name="copying_">"Copying "</string>
+    <string name="_to_">" to "</string>
+    <string name="moving_">"Moving "</string>
+    <string name="conflict">Conflict</string>
+    <string name="detect_file_inUse">"Confliction detected: <xliff:g id="name">%1$s</xliff:g> currently in use by other task. Continue?"</string>
+    <string name="skipAndContinue">Skip and continue</string>
+    <string name="target_inUse">"Operation unavailable, target file currently in use."</string>
+    <string name="canceling">"Canceling..."</string>
+    <string name="confirm_clear_clips">"Cancel unfinished task then clear from clipboard or make them continue to execute in background?"</string>
+    <string name="cancelAndClear">Cancel task and clear</string>
+    <string name="execute_background">"Execute background"</string>
+    <string name="copy_file_name">"(Copy<xliff:g id="copyCount">%2$s</xliff:g>) <xliff:g id="srcName">%1$s</xliff:g>"</string>
+    <string name="read">read</string>
+    <string name="write">write</string>
+    <string name="total">total</string>
+    <string name="theFile">The file</string>
+    <string name="theseFiles">These files</string>
+    <string name="cannot_copy_prompt">"You do not have permission to read target file \"<xliff:g id="name">%1$s</xliff:g>\".\n<xliff:g id="file">%2$s</xliff:g> will not be copied. Continue or cancel?"</string>
+    <string name="cannot_move_prompt">"You do not have permission to write target file \"<xliff:g id="name">%1$s</xliff:g>\".\n<xliff:g id="file">%2$s</xliff:g> will not be moved. Continue or cancel?"</string>
+    <string name="cannot_delete_prompt">"You do not have permission to write target file \"<xliff:g id="name">%1$s</xliff:g>\".\n<xliff:g id="file">%2$s</xliff:g> will not be deleted. Continue or cancel?"</string>
+    <string name="cannot_rename_single_prompt">"You do not have write permission of the target, can not rename it."</string>
+    <string name="continue_op">"Continue"</string>
+    <string name="no_permission">"no access permission"</string>
+    <string name="error_copy_file">"An error occurred while copying"</string>
+    <string name="error_delete_file">"An error occurred while deleting"</string>
+    <string name="error_permission_deny">"Permission insufficient"</string>
+    <string name="error_space_insufficient">"Space insufficient"</string>
+    <string name="required_space">"Required space: <xliff:g id="size">%1$s</xliff:g>"</string>
+    <string name="available_space">"Available space: <xliff:g id="size">%1$s</xliff:g>"</string>
+    <string name="free_more_space">"Please free <xliff:g id="size">%1$s</xliff:g> space in the partition at least."</string>
+    <string name="no_permission_read_file">"Can\'t copy \"<xliff:g id="name">%1$s</xliff:g>\". You have no permission to read it."</string>
+    <string name="no_permission_move_file">"Can\'t move \"<xliff:g id="name">%1$s</xliff:g>\". You have no permission to write it."</string>
+    <string name="no_permission_write_file">"Can\'t write to \"<xliff:g id="name">%1$s</xliff:g>\". You have no permission to write it."</string>
+    <string name="no_permission_delete_file">"Can\'t delete \"<xliff:g id="name">%1$s</xliff:g>\", You have no permission to write it."</string>
+    <string name="cancel_task">Cancel Task</string>
+    <string name="stop_task">Stop Task</string>
+    <string name="home_dir">Home</string>
+    <string name="root_dir">Root</string>
+    <string name="removable_disk">Removable Disk</string>
+    <string name="search_file_by_name">Search file by name</string>
+    <string name="input_string_of_target">input string contained in file name</string>
+    <string name="file_name_contain">file name contains</string>
+    <string name="and_sub_dirs">and its sub directories</string>
+    <string name="detail">Detail</string>
+    <string name="storage_insufficient">\"<xliff:g id="name">%1$s</xliff:g>\" is full, please free space.</string>
+    <string name="dest_storage">Destination storage</string>
+    <string name="confirm_quit">Are you sure to quit <xliff:g id="name">%1$s</xliff:g>?</string>
+    <string name="quit">Quit</string>
+    <string name="show_first_">"Show first "</string>
+    <string name="search_dlg_title">"Searching <xliff:g id="name">%1$s</xliff:g>, please wait"</string>
+    <string name="global_search_dlg_title">"Updating <xliff:g id="name">%1$s</xliff:g> index, please wait"</string>
+    <string name="search_dlg_message">"Searching in directory <xliff:g id="name">%1$s</xliff:g>"</string>
+
+    <string-array name="select_all_array">
+        <item>Select All</item>
+        <item>Deselect All</item>
+    </string-array>
+
+    <string name="invalid_paste_dir">"Can\'t paste here, please specify a valid directory."</string>
+    <string name="move_failed_permission_deny">"Can\'t move here due to permission denial."</string>
+    <string name="open_containing_folder">"Open Containing Folder"</string>
+    <string name="choose_single_file">"Choose a file"</string>
+
+</resources>

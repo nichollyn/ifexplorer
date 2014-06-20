@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    
+    <item
+        android:id="@+id/menu_copyFile"
+        android:enabled="true"
+        android:icon="@drawable/action_copy"
+        android:menuCategory="system"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/copy"
+        android:visible="true"/>
+    <item
+        android:id="@+id/menu_cutFile"
+        android:enabled="true"
+        android:icon="@drawable/action_cut"
+        android:menuCategory="system"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/cut"
+        android:visible="true"/>
+    <item
+        android:id="@+id/menu_deleteFile"
+        android:enabled="true"
+        android:icon="@drawable/action_remove_light"
+        android:menuCategory="system"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/delete"
+        android:visible="true"/><item android:id="@+id/menu_renameFile" android:enabled="true" android:icon="@drawable/action_edit" android:menuCategory="system" android:showAsAction="ifRoom|withText" android:title="@string/rename" android:visible="true" />
+    <item
+        android:id="@+id/menu_detail"
+        android:enabled="true"
+        android:icon="@drawable/action_info"
+        android:menuCategory="system"
+        android:showAsAction="ifRoom|withText"
+        android:title="@string/detail"
+        android:visible="false">
+    </item>
+
+</menu>

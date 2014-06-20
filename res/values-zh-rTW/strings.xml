@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="app_name">IF 檔案瀏覽器</string>
+    <string name="dlg_ok">"確認"</string>
+    <string name="dlg_confirm_eject_text">"如果彈出該設備，您當前實作的某些應用程式可能會停止運行，並且在您重新連接該設備之前都無法使用。"</string>
+    <string name="dlg_prompt_ejecting_text">"該儲存設備正在彈出，請稍候&#8230;"</string>
+    <string name="dlg_eject_failed_text">"無法彈出儲存設備，請稍候再試。"</string>
+    <string name="eject_">"彈出"</string>
+    <string name="ejecting_">"正在彈出"</string>
+    <string name="failed">"失敗"</string>
+    <string name="favorite">收藏夾</string>
+    <string name="category">分類</string>
+    <string name="device">"設備"</string>
+    <string name="local">本地</string>
+    <string name="local_disk">"本地磁碟"</string>
+    <string name="internal_storage">內部記憶體</string>
+    <string name="internal_sdcard">"內部SD卡"</string>
+    <string name="sdcard_storage">"SD卡"</string>
+    <string name="usb_storage">"USB 儲存裝置"</string>
+    <string name="usb1_storage">"USB 儲存裝置 1"</string>
+    <string name="usb2_storage">"USB 儲存裝置 2"</string>
+    <string name="usb3_storage">"USB 儲存裝置 3"</string>
+    <string name="usb4_storage">"USB 儲存裝置 4"</string>
+    <string name="usb5_storage">"USB 儲存裝置 5"</string>
+    <string name="usb_storage_a">"USB 儲存裝置 A"</string>
+    <string name="usb_storage_b">"USB 儲存裝置 B"</string>
+    <string name="usb_storage_c">"USB 儲存裝置 C"</string>
+    <string name="usb_storage_d">"USB 儲存裝置 D"</string>
+    <string name="usb_storage_e">"USB 儲存裝置 E"</string>
+    <string name="usb_storage_f">"USB 儲存裝置 F"</string>
+    <string name="favorite_home">"主頁"</string>
+    <string name="downloads">"下載"</string>
+    <string name="space_available">"可用"</string>
+    <string name="space_total">"總空間"</string>
+    <string name="back">"返回"</string>
+    <string name="stop">"停止"</string>
+    <string name="go_parent_dir">"返回上級資料夾"</string>
+    <string name="eject_inform_text">"將被彈出。"</string>
+    <string name="read_fail_permission">"權限不足，無法讀取"</string>
+    <string name="back_again_quit">"再按一次 \'返回\' 退出"</string>
+    <string name="cannot_find_application">"抱歉，找不到應用程式可以打開該檔案"</string>
+    <string name="cannot_find_">"無法找到"</string>
+    <string name="copy_paste_succeed">"檔案拷貝粘贴成功"</string>
+    <string name="copy_paste_failed">"拷貝粘贴失败"</string>
+    <string name="found_">"找到 "</string>
+    <string name="_files">"個檔案"</string>
+    <string name="hidden_mark">"(隱藏)"</string>
+    <string name="item">"項"</string>
+    <string name="items">"項"</string>
+    <string name="audio_file">"音頻檔案"</string>
+    <string name="video_file">"視頻檔案"</string>
+    <string name="image_file">"圖片"</string>
+    <string name="apk_file">"APK檔案"</string>
+    <string name="cancel">"取消"</string>
+    <string name="progress_search_title">"搜索"</string>
+    <string name="progress_relay_search_message">"正在搜索檔案夾"</string>
+    <string name="progress_search_message">"正在當前儲存裝置中搜尋，請稍候..."</string>
+    <string name="progress_copy_title">"拷貝"</string>
+    <string name="progress_copy_message">"正在拷貝檔案..."</string>
+    <string name="progress_delete_title">"刪除"</string>
+    <string name="progress_delete_message">"正在删除檔案..."</string>
+    <string name="progress_unzip_title">"解壓"</string>
+    <string name="progress_unzip_message">"解壓中，請稍候..."</string>
+    <string name="progress_zip_title">"壓縮"</string>
+    <string name="progress_zip_message">"壓縮中..."</string>
+    <string name="utility">"實用工具"</string>
+    <string name="utility_app_cache_cleaner">"垃圾清理"</string>
+    <string name="no_cache_item">"無緩存項"</string>
+    <string name="disabled">"禁用"</string>
+    <string name="activity_loading">"加載中\u2026"</string>
+    <string name="invalid_size_value">"無法計算包的大小"</string>
+    <string name="computing_size">"計算中\u2026"</string>
+    <string name="memory">"記憶體"</string>
+    <string name="application_info_label">"應用程式信息"</string>
+    <string name="sd_card_storage">"SD卡"</string>
+    <string name="filter_apps_all">"全部"</string>
+    <string name="filter_apps_ondevice">"内部記憶體"</string>
+    <string name="filter_apps_running">"正在運行"</string>
+    <string name="filter_apps_onsdcard">"SD卡"</string>
+    <string name="clean_app_cache">"清理緩存"</string>
+    <string name="clean_residue">"清理殘留檔案"</string>
+    <string name="device_storage_capability">"設備空間"</string>
+    <string name="sdcard_storage_capability">"SD卡空間"</string>
+    <string name="used_size">"已用: <xliff:g id="memory">%1$s</xliff:g>"</string>
+    <string name="free_size">"可用: <xliff:g id="memory">%1$s</xliff:g>"</string>
+    <string name="clean">"清理"</string>
+    <string name="cache_items_">"緩存項: <xliff:g id="count">%1$s</xliff:g>"</string>
+    <string name="residual_items_">"殘留项: <xliff:g id="count">%1$s</xliff:g>"</string>
+    <string name="occupying_size_">"佔用: <xliff:g id="memory">%1$s</xliff:g>"</string>
+    <string name="select_all_recommended_delete">"全選建議刪除項"</string>
+    <string name="start_clean_cache">"緩存檔案將被清理"</string>
+    <string name="start_clean_residual">"殘留檔案將被清理"</string>
+    <string name="no_permission_delete_cache">"您必須獲得Root權限才能刪除指定程式的緩存"</string>
+    <string name="search">搜索</string>
+    <string name="search_record">搜索記錄</string>
+    <string name="global_search">全局搜索</string>
+    <string name="rec_search_current_dir">在 <xliff:g id="cur_dir">%1$s</xliff:g> 中搜索檔案</string>
+    <string name="create">新建</string>
+    <string name="copy">拷貝</string>
+    <string name="cut">剪切</string>
+    <string name="paste">粘貼</string>
+    <string name="remove">移除</string>
+    <string name="unzip">解壓</string>
+    <string name="folder">檔案夾</string>
+    <string name="file">檔案</string>
+    <string name="create_file">"新建檔案"</string>
+    <string name="create_folder">"新建檔案夾"</string>
+    <string name="input_new_folder_name">請輸入檔案夾的名稱</string>
+    <string name="input_new_file_name">請輸入檔案的名稱</string>
+    <string name="default_folder_name">新建檔案夾</string>
+    <string name="default_file_name">新建檔案</string>
+    <string name="invalid_clip_removed">"<xliff:g id="num">%1$s</xliff:g> 不可用的剪貼項被移除."</string>
+    <string name="invalid_clip_found">"發現<xliff:g id="num">%1$s</xliff:g>不可用的剪貼項, 將從粘貼隊列中忽略. 請從剪貼板中移除它們"</string>
+    <string name="no_available_clip">"沒有可用的剪貼項!"</string>
+    <string name="error_invalid_src_path">"源路徑不存在或者不合法！"</string>
+    <string name="error_invalid_target_path">"目標路徑不合法！"</string>
+    <string name="error_empty_name">名字不能為空！</string>
+    <string name="error_file_exists">同名檔案已經存在！</string>
+    <string name="error_folder_exists">同名檔案夾已經存在！</string>
+    <string name="permission_insufficient">權限不足.</string>
+    <string name="error_io_occur">發生I/O錯誤.</string>
+    <string name="error_unsupported_type">不支援的類型.</string>
+    <string name="error_unknown">遭遇未知的錯誤.</string>
+    <string name="select_all">全選</string>
+    <string name="deselect_all">取消全選</string>
+    <string name="icon">圖標</string>
+    <string name="name">名字</string>
+    <string name="clipboard">剪貼板</string>
+    <string name="rename">重命名</string>
+    <string name="pasteAll">全部粘貼</string>
+    <string name="clearAll">全部清除</string>
+    <string name="close">關閉</string>
+    <string name="clear">清除</string>
+    <string name="pasteSelect">粘贴選擇項</string>
+    <string name="clearSelect">清除選擇項</string>
+    <string name="clearAfterPaste">粘貼完畢后將複製項從剪貼板中清除</string>
+    <string name="_copyItem">"個複製項"</string>
+    <string name="_cutItem">"個剪切項"</string>
+    <string name="_deleteItem">"個刪除項"</string>
+    <string name="select_item">"選擇條目"</string>
+    <string name="switch_mode">"切換模式"</string>
+    <string name="view_as_list">列表視圖</string>
+    <string name="view_as_grid">網格視圖</string>
+    <string name="view">視圖</string>
+    <string name="otherClips">&lt;其他剪貼項&gt;</string>
+    <string name="overwrite">覆蓋</string>
+    <string name="overwrite_all">全部覆蓋</string>
+    <string name="overwrite_prompt">"同名檔案已存在，是否覆蓋？"</string>
+    <string name="skip">跳過</string>
+    <string name="skip_all">全部跳過</string>
+    <string name="source_file">"源檔案"</string>
+    <string name="dest_file">"目標檔案"</string>
+    <string name="size">大小</string>
+    <string name="modified">修改</string>
+    <string name="applyToAll">"應用到全部"</string>
+    <string name="newer">(較新)</string>
+    <string name="refresh">刷新</string>
+    <string name="windows">窗口</string>
+    <string name="type">類型</string>
+    <string name="more">更多</string>
+    <string name="share">分享</string>
+    <string name="openAs">打開方式</string>
+    <string name="addToFavorite">添加到收藏夾</string>
+    <string name="send">發送</string>
+    <string name="compress">壓縮</string>
+    <string name="properties">屬性</string>
+    <string name="moveTo">移動到</string>
+    <string name="copyTo">複製到</string>
+    <string name="delete">刪除</string>
+    <string name="readable">可讀</string>
+    <string name="writable">可寫</string>
+    <string name="hidden">隱藏</string>
+    <string name="filter">過濾</string>
+    <string name="Path">路徑</string>
+    <string name="Contains">包含</string>
+    <string name="fullpath">完整路徑</string>
+    <string name="checksum">校驗和</string>
+    <string name="calculate">計算</string>
+    <string name="calculating">"正在計算..."</string>
+    <string name="save">保存</string>
+    <string name="cannot_read">無法讀取</string>
+    <string name="filterOut">篩除</string>
+    <string name="folder_created">"檔案夾\"<xliff:g id="name">%1$s</xliff:g>\"已創建."</string>
+    <string name="new_success">"創建<xliff:g id="type">%1$s</xliff:g> <xliff:g id="name">%2$s</xliff:g> 成功!"</string>
+    <string name="new_failed">"創建<xliff:g id="type">%1$s</xliff:g> 
+        <xliff:g id="name">%2$s</xliff:g>失敗!\n
+        <xliff:g id="reason">%3$s</xliff:g>"</string>
+    <string name="delete_prompt">"確認刪除 \"<xliff:g id="name">%1$s</xliff:g>\" 吗?"</string>
+    <string name="move_succeed">"\"<xliff:g id="name">%1$s</xliff:g>\"移動成功."</string>
+    <string name="move_failed">"\"<xliff:g id="name">%1$s</xliff:g>\"移動失敗!\n
+        <xliff:g id="reason">%2$s</xliff:g>"</string>
+    <string name="delete_succeed">"\"<xliff:g id="name">%1$s</xliff:g>\"已刪除."</string>
+    <string name="delete_failed">"\"<xliff:g id="name">%1$s</xliff:g>\"刪除失敗\n
+        <xliff:g id="reason">%2$s</xliff:g>"</string>
+    <string name="rename_succeed">"\"<xliff:g id="oldName">%1$s</xliff:g>\"已重命名\"<xliff:g id="newName">%2$s</xliff:g>\"."</string>
+    <string name="rename_failed">"\"<xliff:g id="name">%1$s</xliff:g>\"重命名失敗!\n
+        <xliff:g id="reason">%2$s</xliff:g>"</string>
+    <string name="info">信息</string>
+    <string name="readOnly">只讀</string>
+    <string name="readWrite">讀/寫</string>
+    <string name="system">系統</string>
+    <string name="mark">標記</string>
+    <string name="interested">關注的</string>
+    <string name="uninterested">不關注的</string>
+    <string name="marked">被標記為</string>
+    <string name="files">檔案</string>
+    <string name="folders">檔案夾</string>
+    <string name="music">音樂</string>
+    <string name="videos">視頻</string>
+    <string name="movies">影片</string>
+    <string name="pictures">圖片</string>
+    <string name="photos">照片</string>
+    <string name="apkInstaller">APK安裝包</string>
+    <string name="copying_">"正在複製 "</string>
+    <string name="_to_">到</string>
+    <string name="moving_">"正在移動 "</string>
+    <string name="conflict">衝突</string>
+    <string name="detect_file_inUse">"檢測到衝突：<xliff:g id="name">%1$s</xliff:g>當前正被其他任務佔用. 是否繼續?"</string>
+    <string name="skipAndContinue">跳過并繼續</string>
+    <string name="target_inUse">"操作無法完成，目標檔案正在使用中!"</string>
+    <string name="canceling">"正在取消..."</string>
+        <string name="confirm_clear_clips">"取消尚未完成的任務再從剪貼板中清除清除還是讓他們在後臺繼續執行？"</string>
+    <string name="cancelAndClear">取消任務并清除</string>
+    <string name="execute_background">後臺執行</string>
+    <string name="read">讀取</string>
+    <string name="write">寫入</string>
+    <string name="total">總計</string>
+    <string name="theFile">該檔案</string>
+    <string name="theseFiles">這些檔案</string>
+    <string name="copy_file_name">"(副本<xliff:g id="copyCount">%2$s</xliff:g>) <xliff:g id="srcName">%1$s</xliff:g>"</string>
+    <string name="cannot_copy_prompt">"您對目標檔案中的\"<xliff:g id="name">%1$s</xliff:g>\"沒有讀取權限.\n<xliff:g id="file">%2$s</xliff:g>將不會被複製. 要繼續還是取消?"</string>
+    <string name="cannot_move_prompt">"您对目标文件中的\"<xliff:g id="name">%1$s</xliff:g>\"沒有寫入權限\n<xliff:g id="file">%2$s</xliff:g>將不會被移動. 要繼續還是取消?"</string>
+    <string name="cannot_delete_prompt">"您對目標檔案中的\"<xliff:g id="name">%1$s</xliff:g>\"沒有寫入權限\n<xliff:g id="file">%2$s</xliff:g>將不會被刪除. 要繼續還是取消?"</string>
+    <string name="cannot_rename_single_prompt">"您對目標檔案沒有寫入權限, 不能進行重命名."</string>
+    <string name="continue_op">"繼續"</string>
+    <string name="no_permission">"無訪問權限"</string>
+    <string name="error_copy_file">"複製時發生錯誤"</string>
+    <string name="error_delete_file">"刪除時發生錯誤"</string>
+    <string name="error_permission_deny">"權限不足"</string>
+    <string name="error_space_insufficient">"空間不足"</string>
+    <string name="required_space">"需要的空間: <xliff:g id="size">%1$s</xliff:g>"</string>
+    <string name="available_space">"可用的空間: <xliff:g id="size">%1$s</xliff:g>"</string>
+    <string name="free_more_space">"請在該分區釋放至少<xliff:g id="size">%1$s</xliff:g>的空間."</string>
+    <string name="no_permission_read_file">"無法複製\"<xliff:g id="name">%1$s</xliff:g>\", 您對它沒有讀取權限."</string>
+    <string name="no_permission_move_file">"無法移動\"<xliff:g id="name">%1$s</xliff:g>\", 您對它沒有寫入權限."</string>
+    <string name="no_permission_write_file">"無法寫入\"<xliff:g id="name">%1$s</xliff:g>\"， 您對它沒有寫入權限."</string>
+    <string name="no_permission_delete_file">"無法刪除\"<xliff:g id="name">%1$s</xliff:g>\", 您對它沒有寫入權限."</string>
+    <string name="cancel_task">取消任務</string>
+    <string name="stop_task">停止任務</string>
+    <string name="home_dir">主目錄</string>
+    <string name="root_dir">根目錄</string>
+    <string name="removable_disk">可移動磁碟</string>
+    <string name="search_file_by_name">按檔案名搜索</string>
+    <string name="input_string_of_target">輸入檔案名中包含的字符串</string>
+    <string name="file_name_contain">檔案名包含</string>
+    <string name="and_sub_dirs">及其子目錄</string>
+    <string name="detail">詳細信息</string>
+    <string name="storage_insufficient">\"<xliff:g id="name">%1$s</xliff:g>\" 空間已滿，請釋放空間.</string>
+    <string name="dest_storage">目標存儲空間</string>
+    <string name="confirm_quit">確認要退出<xliff:g id="name">%1$s</xliff:g>吗?</string>
+    <string name="quit">退出</string>
+    <string name="show_first_">"顯示前"</string>
+    <string name="search_dlg_title">"搜索 <xliff:g id="name">%1$s</xliff:g>，請稍候"</string>
+    <string name="global_search_dlg_title">"<xliff:g id="name">%1$s</xliff:g>索引更新中，請稍候"</string>
+    <string name="search_dlg_message">"正在搜索檔案夾 <xliff:g id="name">%1$s</xliff:g>"</string>
+
+    <string-array name="select_all_array">
+        <item>全選</item>
+        <item>取消全選</item>
+    </string-array>
+
+    <string name="invalid_paste_dir">"不能在此處粘貼，請指定一個有效的檔案夾!"</string>
+    <string name="move_failed_permission_deny">"權限不足！ 不能移動到这里。"</string>
+    <string name="choose_single_file">"選择一個檔案"</string>
+
+</resources>

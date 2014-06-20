@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/menu_pasteFile"
+        android:icon="@drawable/action_paste"
+        android:showAsAction="always"
+        android:title="@string/paste"
+        android:visible="false"/>
+    <item
+        android:id="@+id/menu_new_file_folder"
+        android:icon="@drawable/new_folder"
+        android:showAsAction="always"
+        android:title="@string/create"/>
+    <item
+        android:id="@+id/menu_display_mode"
+        android:icon="@drawable/display_mode"
+        android:showAsAction="always"
+        android:title="@string/view">
+        <menu>
+            <group
+                android:id="@+id/display_mode_group"
+                android:checkableBehavior="single"
+                android:enabled="true"
+                android:menuCategory="container"
+                android:visible="true" >
+                <item
+                    android:id="@+id/menu_grid_mode"
+                    android:icon="@drawable/action_view_as_grid"
+                    android:showAsAction="always|withText"
+                    android:title="@string/view_as_grid"/>
+                <item
+                    android:id="@+id/menu_list_mode"
+                    android:icon="@drawable/action_view_as_list"
+                    android:showAsAction="always|withText"
+                    android:title="@string/view_as_list"/>
+            </group>
+        </menu>
+    </item>
+    <item
+        android:id="@+id/menu_search"
+        android:actionViewClass="android.widget.SearchView"
+        android:icon="@drawable/action_search"
+        android:showAsAction="always"
+        android:title="@string/search">
+    </item>
+</menu>

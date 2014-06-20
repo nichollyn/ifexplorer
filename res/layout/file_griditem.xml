@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<gem.kevin.widget.ActionModeDraggableView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/file_item_layout"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="#00ffffff" >
+
+    <ImageView
+        android:id="@+id/dragging_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/drag_ready_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/normal_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+
+        <ImageView
+            android:id="@+id/file_icon"
+            android:layout_width="@dimen/file_grid_icon_width"
+            android:layout_height="@dimen/file_grid_icon_height"
+            android:layout_gravity="center_horizontal|top"
+            android:layout_marginBottom="@dimen/file_grid_icon_marginBottom"
+            android:layout_marginTop="@dimen/file_grid_icon_marginTop"
+            android:contentDescription="@string/icon" />
+
+        <LinearLayout
+            android:id="@+id/name_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/file_grid_name_height"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="@dimen/file_grid_name_margin" >
+
+            <TextView
+                android:id="@+id/file_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/file_name_bg"
+                android:gravity="center_horizontal"
+                android:padding="@dimen/file_grid_name_padding"
+                android:textColor="@drawable/file_name_textcolor"
+                android:textIsSelectable="false"
+                android:textSize="@dimen/file_grid_name_textsize" />
+        </LinearLayout>
+    </LinearLayout>
+
+</gem.kevin.widget.ActionModeDraggableView>

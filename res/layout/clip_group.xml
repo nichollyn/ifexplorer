@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="@dimen/clipgroup_title_padding">
+
+        <ImageView
+                android:id="@+id/clip_indicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/cut_indicator"/>
+
+        <TextView
+                android:id="@+id/clip_title"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:textColor="@color/black"
+                android:textSize="@dimen/clipgroup_title_textsize"/>
+    </LinearLayout>
+
+    <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:background="@drawable/black_divider"/>
+
+    <FrameLayout
+            android:id="@+id/clip_group_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+        <LinearLayout
+                android:id="@+id/clip_oneshot_task"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:paddingLeft="@dimen/clipgroup_oneshot_paddingLeft"
+                android:paddingRight="@dimen/clipgroup_oneshot_paddingRight"
+                android:paddingTop="@dimen/clipgroup_oneshot_paddingTop"
+                android:visibility="gone">
+
+            <TextView
+                    android:id="@+id/oneshot_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/clipgroup_status_textsize"/>
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                <ProgressBar
+                        android:id="@+id/oneshot_progress"
+                        style="@style/CopyProgress"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginTop="@dimen/clip_progress_bar_marginTop"
+                        android:layout_weight="10"
+                        android:progress="0"/>
+
+                <ImageButton
+                        android:id="@+id/cancelTask"
+                        android:layout_width="@dimen/clip_button_size"
+                        android:layout_height="@dimen/clip_button_size"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="@dimen/clip_cancel_button_marginLeft"
+                        android:layout_marginTop="@dimen/clip_progress_bar_marginTop"
+                        android:background="@color/silver_gray"
+                        android:src="@drawable/action_cancel_dark"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+                android:id="@+id/clip_content"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/clip_content_height"
+                android:orientation="horizontal"
+                android:padding="@dimen/clip_content_padding"
+                android:paddingLeft="@dimen/clip_content_paddingLeft"
+                android:paddingRight="@dimen/clip_content_paddingLeft"
+                android:paddingTop="@dimen/clipgroup_oneshot_paddingTop">
+
+            <GridView
+                    android:id="@+id/clip_list"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="@dimen/clip_list_marginRight"
+                    android:layout_weight="10"
+                    android:clickable="false"
+                    android:numColumns="@integer/clip_grid_columns"
+                    android:padding="@dimen/clip_list_padding"
+                    android:horizontalSpacing="@dimen/clip_list_horizontal_space"
+                    android:scrollbars="none"
+                    android:verticalSpacing="@dimen/clip_list_vertical_space"/>
+
+            <ImageButton
+                    android:id="@+id/executeClip"
+                    android:layout_width="@dimen/clip_button_size"
+                    android:layout_height="@dimen/clip_button_size"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="@dimen/clip_cancel_button_marginLeft"
+                    android:background="@color/silver_gray"
+                    android:src="@drawable/action_play"/>
+
+            <ImageButton
+                    android:id="@+id/removeClip"
+                    android:layout_width="@dimen/clip_button_size"
+                    android:layout_height="@dimen/clip_button_size"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="@dimen/clip_cancel_button_marginLeft"
+                    android:background="@color/silver_gray"
+                    android:src="@drawable/action_remove_dark"/>
+        </LinearLayout>
+    </FrameLayout>
+
+    <ListView
+            android:id="@+id/repeatTasks"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/clip_repeat_task_paddingSide"
+            android:paddingRight="@dimen/clip_repeat_task_paddingSide"
+            android:visibility="gone"/>
+
+</LinearLayout>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<searchable xmlns:android="http://schemas.android.com/apk/res/android" 
+    android:label="@string/app_name" 
+    android:icon="@drawable/folder" 
+    android:hint="@string/input_string_of_target" 
+    android:searchButtonText="@string/search" 
+    android:inputType="text" android:imeOptions="actionSearch">
+    
+
+</searchable>

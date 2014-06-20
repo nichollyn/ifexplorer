@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:paddingLeft="20dp"
+              android:paddingRight="20dp"
+              android:orientation="vertical">
+
+    <TextView
+            android:id="@+id/status_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="11sp"
+            android:textColor="@color/black"/>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <ProgressBar
+                android:id="@+id/execute_progress"
+                style="@style/CopyProgress"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="10"
+                android:layout_gravity="center_vertical"
+                android:progress="0"/>
+
+        <ImageButton
+                android:id="@+id/cancelTask"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:background="@color/silver_gray"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"/>
+    </LinearLayout>
+
+</LinearLayout>

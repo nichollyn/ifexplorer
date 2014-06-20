@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <issue id="DefaultLocale" severity="ignore">
+        <ignore path="src/com/xmic/ifmanager/EventHandler.java" />
+        <ignore path="src/com/xmic/ifmanager/FileExplorer.java" />
+        <ignore path="src/com/xmic/ifmanager/Utils.java" />
+    </issue>
+    <issue id="SdCardPath" severity="ignore" />
+</lint>
