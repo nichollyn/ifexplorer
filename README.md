@@ -1,7 +1,7 @@
 IF File Explorer
 ==========
 
-IF File Explorer is a powerful and handy application for file management.  
+IF File Explorer aims to be a powerful and handy application for file management.  
 Current implemented features include:
  * Cascaded file path navigation as address bar 
  * Browse history							 
