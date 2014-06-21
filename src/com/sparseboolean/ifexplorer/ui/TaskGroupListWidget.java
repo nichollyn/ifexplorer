@@ -1,6 +1,6 @@
 /*
-    IfManager, an open source system manager for the Android system.
-    Copyright (C) 2012, 2013  Kevin Lin
+    IfExplorer, an open source file manager for the Android system.
+    Copyright (C) 2014  Kevin Lin
     <chenbin.lin@tpv-tech.com>
     
     This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by
