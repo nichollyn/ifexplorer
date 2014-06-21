@@ -20,14 +20,14 @@ package com.sparseboolean.ifexplorer;
 
 //!! Please also sync update on this source file to IfConfig.java.<specific_product>
 public final class IfConfig {
-    public static final boolean PRODUCT_IS_MONITOR = true;
+    public static final boolean PRODUCT_IS_MONITOR = false;
     public static final boolean PRODUCT_SUPPORT_KEVIN_VOLD = false;
     public static final boolean SIGNED_WITH_PLATFORM_KEY = false;
     public static final boolean PRODUCT_BUILT_IN_SDCARD = false;
-    public static final boolean PRODUCT_ROCK_CHIP = true;
+    public static final boolean PRODUCT_ROCK_CHIP = false;
     public static final String PRODUCT_ROCK_CHIP_INTERNAL_DISK = "/mnt/internal_sd";
 
-    public static final boolean FILE_SUPPORT_DRAG = false;
+    public static final boolean FILE_SUPPORT_DRAG = true;
 
     public static final long PRODUCT_INTERNAL_STORAGE_SIZE = 102 * 1024 * 1024;
     public static final float PRODUCT_INTERNAL_STORAGE_THRESHOLD = 0.1f;
