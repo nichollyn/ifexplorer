@@ -123,9 +123,9 @@ public class IfExplorer extends Activity implements OnTouchListener,
 
         public HashSet<Object> getSelections() {
             HashSet<Object> result = new HashSet<Object>();
-            SparseBooleanArray choices = mCurrentShowList
+            SparseBooleanArray choices = mCurrentShownFileList
                     .getCheckedItemPositions();
-            ListAdapter adapter = mCurrentShowList.getAdapter();
+            ListAdapter adapter = mCurrentShownFileList.getAdapter();
             int total = adapter.getCount();
             for (int i = 0; i < total; i++) {
                 if (choices.get(i)) {
@@ -199,9 +199,9 @@ public class IfExplorer extends Activity implements OnTouchListener,
                         @Override
                         public void onCheckedChanged(CompoundButton buttonView,
                                 boolean isChecked) {
-                            for (int i = 0; i < mCurrentShowList.getAdapter()
+                            for (int i = 0; i < mCurrentShownFileList.getAdapter()
                                     .getCount(); i++) {
-                                mCurrentShowList.setItemChecked(i, isChecked);
+                                mCurrentShownFileList.setItemChecked(i, isChecked);
                             }
                         }
                     });
@@ -225,7 +225,7 @@ public class IfExplorer extends Activity implements OnTouchListener,
                 long id, boolean checked) {
             setSubtitle(mode);
 
-            View targetItemView = mCurrentShowList.getChildAt(position);
+            View targetItemView = mCurrentShownFileList.getChildAt(position);
             if (targetItemView != null) {
                 CheckBox checkbox = (CheckBox) targetItemView
                         .findViewById(R.id.file_selected);
@@ -234,7 +234,7 @@ public class IfExplorer extends Activity implements OnTouchListener,
                 }
             }
 
-            mOptionRenameAvailable = (mCurrentShowList.getCheckedItemCount() == 1);
+            mOptionRenameAvailable = (mCurrentShownFileList.getCheckedItemCount() == 1);
             HashSet<Object> selections = getSelections();
             for (Object selection : selections) {
                 if (selection instanceof FileItem) {
@@ -284,8 +284,8 @@ public class IfExplorer extends Activity implements OnTouchListener,
         }
 
         private void setSubtitle(ActionMode actionMode) {
-            int totalNum = mCurrentShowList.getCount();
-            int checkedNum = mCurrentShowList.getCheckedItemCount();
+            int totalNum = mCurrentShownFileList.getCount();
+            int checkedNum = mCurrentShownFileList.getCheckedItemCount();
 
             // Could possibly restore from a savedStateInstance,
             // with a wrong count of current show list
@@ -313,18 +313,19 @@ public class IfExplorer extends Activity implements OnTouchListener,
                 boolean clearChoice) {
             Log.i(TAG, "updateUiForActionMode " + inActionMode);
             // sliding layer
-            if (mSlidingLayer != null) {
-                mSlidingLayer.setVisibility(inActionMode ? View.GONE
+            if (mLibrarySlidingLayer != null) {
+                mLibrarySlidingLayer.setVisibility(inActionMode ? View.GONE
                         : View.VISIBLE);
             }
 
-            mCurrentShowList.setVisibility(View.VISIBLE);
+            mCurrentShownFileList.setVisibility(View.VISIBLE);
             mNavBackwardButton.setVisibility(inActionMode ? View.INVISIBLE
                     : View.VISIBLE);
             mNavForwardButton.setVisibility(inActionMode ? View.INVISIBLE
                     : View.VISIBLE);
-            mCollectionSwitchButton.setVisibility(inActionMode ? View.INVISIBLE
-                    : (mSlidingLayer != null ? View.VISIBLE : View.INVISIBLE));
+            mLibrarySwitchButton.setVisibility(inActionMode ? View.INVISIBLE
+                    : (mLibrarySlidingLayer != null ? View.VISIBLE
+                            : View.INVISIBLE));
             if (inActionMode) {
                 mPathNavigator.switchToIndicateMode();
             } else {
@@ -404,7 +405,7 @@ public class IfExplorer extends Activity implements OnTouchListener,
     private FileDataListAdapter mFileDataListAdapter;
     private FileDataGridAdapter mFileDataGridAdapter;
 
-    private AbsListView mCurrentShowList;
+    private AbsListView mCurrentShownFileList;
     private int mCurrentViewMode = VIEW_AS_GRID;
     private DropableListView mFileListView;
     private DropableGridView mFileGridView;
@@ -413,10 +414,14 @@ public class IfExplorer extends Activity implements OnTouchListener,
     private FilePathNavigator mPathNavigator;
 
     private SearchView mSearchView;
-    private ImageView mCollectionSwitchButton;
+    private ImageView mLibrarySwitchButton;
+    private ImageView mCloudSwitchButton;
     private ImageView mNavBackwardButton;
     private ImageView mNavForwardButton;
-    private SlidingLayer mSlidingLayer;
+    private HashSet<SlidingLayer> mSlidingLayers = new HashSet<SlidingLayer>();
+    private HashMap<View, SlidingLayer> mSwitchSlidingLayerMap = new HashMap<View, SlidingLayer>();
+    private SlidingLayer mLibrarySlidingLayer;
+    private SlidingLayer mCloudSlidingLayer;
 
     private SlidingDrawerEx mClipBoardDrawer;
     private View mClipBoardIndicator;
@@ -477,8 +482,9 @@ public class IfExplorer extends Activity implements OnTouchListener,
                                 .endsWith(FilePathUrlManager.SMART_APK)) {
                             searchType = StorageUtil.TYPE_APKFILE;
                         }
-                        mAppController.searchFiles(searchType, FileUtil.FILE_PATTERN_ALL,
-                                "/", IfConfig.MAX_SEARCH_DEPTH, false);
+                        mAppController.searchFiles(searchType,
+                                FileUtil.FILE_PATTERN_ALL, "/",
+                                IfConfig.MAX_SEARCH_DEPTH, false);
                     } else {
                         mAppController.updateDirectory(mFileManager
                                 .refreshUrlContent());
@@ -749,7 +755,7 @@ public class IfExplorer extends Activity implements OnTouchListener,
                         path, true, false));
                 // When entering a folder, always focus on
                 // the first item
-                mCurrentShowList.setSelection(0);
+                mCurrentShownFileList.setSelection(0);
             } else {
                 Toast.makeText(this, R.string.read_fail_permission,
                         Toast.LENGTH_SHORT).show();
@@ -1082,7 +1088,7 @@ public class IfExplorer extends Activity implements OnTouchListener,
             // reset current dir
             sCurrentDir = null;
 
-            closeSlidingLayer(false);
+            closeAllSlidingLayer(false);
         } else if (adapterView.getAdapter() instanceof DeviceDataAdapter) {
             if (mActivatingActionMode != null) {
                 mActivatingActionMode.finish();
@@ -1095,7 +1101,7 @@ public class IfExplorer extends Activity implements OnTouchListener,
             mAppController.updateDirectory(mFileManager.getNextUrlContent(path,
                     true, false));
 
-            closeSlidingLayer(false);
+            closeAllSlidingLayer(false);
         } else if (adapterView.getAdapter() instanceof FileDataListAdapter) {
             handleFileItemClick(mFileDataListAdapter, itemView, pos, id);
         } else if (adapterView.getAdapter() instanceof FileDataGridAdapter) {
@@ -1356,31 +1362,31 @@ public class IfExplorer extends Activity implements OnTouchListener,
     public void switchViewMode(int viewMode) {
         switch (viewMode) {
         case VIEW_AS_LIST:
-            if (mSlidingLayer != null && mSlidingLayer.isOpened()) {
+            if (mLibrarySlidingLayer != null && mLibrarySlidingLayer.isOpened()) {
                 mFileListView.setVisibility(View.GONE);
             } else {
                 mFileListView.setVisibility(View.VISIBLE);
             }
 
             mFileGridView.setVisibility(View.GONE);
-            mCurrentShowList = mFileListView;
+            mCurrentShownFileList = mFileListView;
             mCurrentViewMode = VIEW_AS_LIST;
             break;
         case VIEW_AS_GRID:
-            if (mSlidingLayer != null && mSlidingLayer.isOpened()) {
+            if (mLibrarySlidingLayer != null && mLibrarySlidingLayer.isOpened()) {
                 mFileGridView.setVisibility(View.GONE);
             } else {
                 mFileGridView.setVisibility(View.VISIBLE);
             }
 
             mFileListView.setVisibility(View.GONE);
-            mCurrentShowList = mFileGridView;
+            mCurrentShownFileList = mFileGridView;
             mCurrentViewMode = VIEW_AS_GRID;
             break;
         }
 
         if (mAppController != null) {
-            mAppController.setCurrentFileListView(mCurrentShowList);
+            mAppController.setCurrentFileListView(mCurrentShownFileList);
         }
 
         SharedPreferences prefs = PreferenceManager
@@ -1415,15 +1421,20 @@ public class IfExplorer extends Activity implements OnTouchListener,
                 });
     }
 
-    private void closeSlidingLayer(boolean smooth) {
-        if (mSlidingLayer != null && mSlidingLayer.isOpened()) {
-            mSlidingLayer.closeLayer(smooth);
-            if (mCollectionSwitchButton != null) {
-                mCollectionSwitchButton
-                        .setImageResource(R.drawable.collection_expand);
+    private void closeAllSlidingLayer(boolean smooth) {
+        for (SlidingLayer layer : mSlidingLayers) {
+            if (layer != null && layer.isOpened()) {
+                layer.closeLayer(smooth);
             }
         }
-        mCurrentShowList.setVisibility(View.VISIBLE);
+        mCurrentShownFileList.setVisibility(View.VISIBLE);
+    }
+
+    private void closeSlidingLayer(SlidingLayer targetLayer, boolean smooth) {
+        if (targetLayer != null && targetLayer.isOpened()) {
+            targetLayer.closeLayer(smooth);
+        }
+        mCurrentShownFileList.setVisibility(View.VISIBLE);
     }
 
     private void confirmOnAppQuit() {
@@ -1554,24 +1565,31 @@ public class IfExplorer extends Activity implements OnTouchListener,
     }
 
     private void initSlidingLayerState() {
-        mSlidingLayer.setStickTo(SlidingLayer.STICK_TO_TOP);
-        LayoutParams rlp = (LayoutParams) mSlidingLayer.getLayoutParams();
-        rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+        for (SlidingLayer layer : mSlidingLayers) {
+            layer.setStickTo(SlidingLayer.STICK_TO_TOP);
+            LayoutParams rlp = (LayoutParams) layer.getLayoutParams();
+            rlp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
 
-        mSlidingLayer.setLayoutParams(rlp);
-        mSlidingLayer.setShadowWidth(0);
-        mSlidingLayer.setShadowDrawable(null);
-        mSlidingLayer.setSlidingEnabled(false);
-        mSlidingLayer.setOpenOnTapEnabled(false);
-        mSlidingLayer.setCloseOnTapEnabled(false);
+            layer.setLayoutParams(rlp);
+            layer.setShadowWidth(0);
+            layer.setShadowDrawable(null);
+            layer.setSlidingEnabled(false);
+            layer.setOpenOnTapEnabled(false);
+            layer.setCloseOnTapEnabled(false);
+        }
     }
 
-    private void openSlidingLayer(boolean smooth) {
-        if (mSlidingLayer != null && !mSlidingLayer.isOpened()) {
-            mSlidingLayer.openLayer(smooth);
-            mCollectionSwitchButton
-                    .setImageResource(R.drawable.collection_collapse);
-            mCurrentShowList.setVisibility(View.GONE);
+    private void openSlidingLayer(SlidingLayer targetLayer, boolean smooth) {
+        boolean doSmoothOpen = smooth;
+        for (SlidingLayer layer : mSlidingLayers) {
+            if (layer != null && layer.isOpened()) {
+                doSmoothOpen = false;
+                layer.closeLayer(false);
+            }
+        }
+        if (targetLayer != null && !targetLayer.isOpened()) {
+            targetLayer.openLayer(doSmoothOpen);
+            mCurrentShownFileList.setVisibility(View.GONE);
         }
     }
 
@@ -1619,16 +1637,33 @@ public class IfExplorer extends Activity implements OnTouchListener,
             }
 
         });
-        mCollectionSwitchButton = (ImageView) mPathNavigator
+        mLibrarySwitchButton = (ImageView) mPathNavigator
                 .findViewById(R.id.collection_panel_switch);
-        mCollectionSwitchButton.setOnClickListener(new OnClickListener() {
+        mLibrarySwitchButton.setOnClickListener(new OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                if (mSlidingLayer != null && mSlidingLayer.isOpened()) {
-                    closeSlidingLayer(true);
-                } else if (mSlidingLayer != null && !mSlidingLayer.isOpened()) {
-                    openSlidingLayer(true);
+                if (mLibrarySlidingLayer != null
+                        && mLibrarySlidingLayer.isOpened()) {
+                    closeSlidingLayer(mLibrarySlidingLayer, true);
+                } else if (mLibrarySlidingLayer != null
+                        && !mLibrarySlidingLayer.isOpened()) {
+                    openSlidingLayer(mLibrarySlidingLayer, true);
+                }
+            }
+
+        });
+        mCloudSwitchButton = (ImageView) mPathNavigator
+                .findViewById(R.id.cloud_panel_switch);
+        mCloudSwitchButton.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                if (mCloudSlidingLayer != null && mCloudSlidingLayer.isOpened()) {
+                    closeSlidingLayer(mCloudSlidingLayer, true);
+                } else if (mCloudSlidingLayer != null
+                        && !mCloudSlidingLayer.isOpened()) {
+                    openSlidingLayer(mCloudSlidingLayer, true);
                 }
             }
 
@@ -1755,14 +1790,33 @@ public class IfExplorer extends Activity implements OnTouchListener,
 
     protected void initializeSlidingLayer() {
         // Reset at first
-        mSlidingLayer = null;
-        if (mCollectionSwitchButton != null) {
-            mCollectionSwitchButton.setVisibility(View.GONE);
+        mSlidingLayers.clear();
+        mLibrarySlidingLayer = null;
+        mCloudSlidingLayer = null;
+        if (mLibrarySwitchButton != null) {
+            mLibrarySwitchButton.setVisibility(View.GONE);
+        }
+        if (mCloudSwitchButton != null) {
+            mCloudSwitchButton.setVisibility(View.GONE);
         }
 
-        mSlidingLayer = (SlidingLayer) findViewById(R.id.sliding_panel);
+        mLibrarySlidingLayer = (SlidingLayer) findViewById(R.id.sliding_panel);
+        if (mLibrarySlidingLayer != null) {
+            mLibrarySwitchButton.setVisibility(View.VISIBLE);
+            mSwitchSlidingLayerMap.put(mLibrarySwitchButton,
+                    mLibrarySlidingLayer);
+            mSlidingLayers.add(mLibrarySlidingLayer);
+        }
+        mCloudSlidingLayer = (SlidingLayer) findViewById(R.id.sliding_cloud_panel);
+        if (mCloudSlidingLayer != null) {
+            mCloudSwitchButton.setVisibility(View.VISIBLE);
+            mSwitchSlidingLayerMap.put(mCloudSwitchButton, mCloudSlidingLayer);
+            mSlidingLayers.add(mCloudSlidingLayer);
+        }
 
-        if (mSlidingLayer != null) {
+        if (mSlidingLayers.size() > 0) {
+            initSlidingLayerState();
+
             // Using sliding layer means display space is limited,
             // reduce maximum visible file path node according to device display
             // type
@@ -1776,12 +1830,6 @@ public class IfExplorer extends Activity implements OnTouchListener,
             case DEVICE_PHONE_PORT:
                 FilePathNavigator.MAX_BUTTON_NUM = 2;
                 break;
-            }
-
-            initSlidingLayerState();
-
-            if (mCollectionSwitchButton != null) {
-                mCollectionSwitchButton.setVisibility(View.VISIBLE);
             }
         } else {
             FilePathNavigator.MAX_BUTTON_NUM = 5;
@@ -2062,15 +2110,15 @@ public class IfExplorer extends Activity implements OnTouchListener,
                 mAppController.getCachedVideoFilePaths());
         outState.putStringArrayList(KEY_SAVE_CACHED_APK_FILEPATHS,
                 mAppController.getCachedApkFilePaths());
-        if (mSlidingLayer != null && mSlidingLayer.isOpened()) {
+        if (mLibrarySlidingLayer != null && mLibrarySlidingLayer.isOpened()) {
             outState.putBoolean(KEY_SAVE_SLIDING_LAYER_OPEN, true);
         } else {
             outState.putBoolean(KEY_SAVE_SLIDING_LAYER_OPEN, false);
         }
         outState.putInt(KEY_SAVE_FILE_LIST_TOTAL_NUM,
-                mCurrentShowList.getCount());
+                mCurrentShownFileList.getCount());
         outState.putInt(KEY_SAVE_FILE_LIST_SELECTED_NUM,
-                mCurrentShowList.getCheckedItemCount());
+                mCurrentShownFileList.getCheckedItemCount());
 
         super.onSaveInstanceState(outState);
     }

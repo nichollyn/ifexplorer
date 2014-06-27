@@ -89,9 +89,6 @@ import com.sparseboolean.ifexplorer.ui.FavoriteDataAdapter;
 import com.sparseboolean.ifexplorer.ui.FilePathNavigator;
 import com.sparseboolean.ifexplorer.ui.DropableFilePathButton;
 
-/** This class sits between the main activity and com.nexes.manager.FileManager
- * class. To keep the FileManager class modular, this class exists to handle UI
- * events and communicate that information to the FileManger class. */
 public class IfAppController implements FilePathUrlManager.FilePathObserver,
         ActionModeDraggableView.DragProgressDelegate, OnDropDelegate,
         OpenDelegate, BunchToStackAnimation.BunchAnimationListener,
